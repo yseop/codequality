@@ -1,0 +1,4 @@
+= TODO List for Java formatter and code checks
+
+* [ ] Set-up template to generate Javadoc one the fly (`Alt+Shift+J`)
+* [ ] Check the requirements for missing Javadoc alert (only on public methods ? Constructors ?)
