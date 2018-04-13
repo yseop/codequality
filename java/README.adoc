@@ -1,0 +1,83 @@
+= Yseop code style documentation
+:toc2:
+:sectnums:
+:revnumber: 1.0
+:icons: font
+:source-highlighter: coderay
+
+This document goal is to show how to enforce the Yseop Code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]). +
+All the necessary files are placed in the [red]`codestyle` folder at the root of the project.
+
+== Eclipse CheckStyle Plugin
+
+First, you need to install the http://checkstyle.org/eclipse-cs/#!/[CheckStyle Plugin] (drag and drop the [red]`install` button into your Eclipse workspace window, to trigger the installation).
+
+* Once this is done, go to `Window -> Preferences -> CheckStyle`.
+
+You'll see a list of two already existing configuration (Google and Sun):
+
+* Click on `New` and in the new window select `External Configuration File`.
+* Put the name `Yseop Code Checks` in the `Name` box, then click on `Browse`, and select [red]`codestyle/Yseop_Code_Checks.xml`.
+* Then click on `Set as default`, and finally, `Apply and Close`.
+
+Eclipse will prompt you about rebuilding the projects, select `Yes`.
+
+Now that the CheckStyle plugin is installed and configured, you need to apply it to each project you are working on: 
+
+* Right click on a project's root folder, select `Properties`.
+* Go to `CheckStyle`, and tick the `Checkstyle active for this project` box.
+* Make sure the configuration `Yseop Code Checks (Global)` is selected in the list below.
+* Apply and close.
+
+You should now see the code style 'errors' highlighted in your editor.
+
+== Eclipse Formatter
+
+To try and fix these 'errors', you need to add a code formatter to Eclipse:
+
+* Go to `Window -> Preferences -> Java -> Code Style -> Formatter`.
+* Click on `Import`, and select [red]`codesyle/Yseop_Code_Formatter.xml`.
+* Apply and Close.
+
+To make sure the formatter will be used by each of your project:
+
+* Right click on a project's root folder, select `Properties`.
+* Go to `Java Code Style -> Formatter`, and make sur the `Enable project specific settings` box is *_not_* checked.
+
+Now to format your code, you can use the `Ctrl + Shift + f` shortcut in any Java file. It also works if you select a specific line.
+
+== Save Actions
+
+To be sure not to forget to format your code, you can set a `Save Actions`, a set of actions that will be triggered each time you save a modification in your code.
+
+* Go to `Window -> Preferences -> Java -> Editors -> Save Actions`.
+* Tick the `Perform the selected action on save` box.
+* Then tick the `Format source code` box, and make sur the `Format all lines` option is selected.
+* Also tick the `Organize imports` box. This will be discussed in the following chapter.
+* And finally tick the `Additional Actions` box.
+* Apply and Close.
+
+To make sure the save actions will be the same for each of your project:
+
+* Right click on a project's root folder, select `Properties`.
+* Go to `Java Editors -> Save Actions`, and make sur the `Enable project specific settings` box is *_not_* checked.
+
+== Imports
+
+Imports organization are also important for a standardized code style:
+
+* Go to `Window -> Preferences -> Java -> Code Style -> Organize Imports`.
+* Rearrange the import in alphabetical order, for example :
+** `com`
+** `java`
+** `javax`
+** `org`
+* Make sur the `Number of imports needed for .\*` and `Number of static imports needed for .*` are set to 99.
+* Apply and close.
+
+To make sure the imports organization will be the same for each of your project:
+
+* Right click on a project's root folder, select `Properties`.
+* Go to `Java Code Style -> Organize Imports`, and make sur the `Enable project specific settings` box is *_not_* checked.
+
+You can now reorganize your imports by using `Ctrl + Shift + o`, or by just saving a modification, thanks to the save actions.
