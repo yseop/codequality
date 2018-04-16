@@ -2,3 +2,4 @@
 
 * [ ] Set-up template to generate Javadoc one the fly (`Alt+Shift+J`)
 * [ ] Check the requirements for missing Javadoc alert (only on public methods ? Constructors ?)
+* [ ] Declaration de variable sur la meme ligne a implem dans le checker ?
