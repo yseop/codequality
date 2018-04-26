@@ -5,8 +5,11 @@
 :icons: font
 :source-highlighter: coderay
 
-This document goal is to show how to enforce the Yseop Code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]). +
-All the necessary files are placed in the [red]`codestyle` folder at the root of the project.
+This document goal is to show how to enforce the Yseop Code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]).
+
+== Prerequisite
+
+To be able to use the Yseop check style and formatter, you must first clone this repository to have access to the files.
 
 == Eclipse CheckStyle Plugin
 
@@ -17,15 +20,16 @@ First, you need to install the http://checkstyle.org/eclipse-cs/#!/[CheckStyle P
 You'll see a list of two already existing configuration (Google and Sun):
 
 * Click on `New` and in the new window select `External Configuration File`.
-* Put the name `Yseop Code Checks` in the `Name` box, then click on `Browse`, and select [red]`codestyle/Yseop_Code_Checks.xml`.
+* Put the name `Yseop Code Checks` in the `Name` box, then click on `Browse`, and select [red]`codequality/java/codeChecks/Yseop_Code_Checks.xml`.
 * Then click on `Set as default`, and finally, `Apply and Close`.
 
 Eclipse will prompt you about rebuilding the projects, select `Yes`.
 
-Now that the CheckStyle plugin is installed and configured, you need to apply it to each project you are working on: 
+Now that the CheckStyle plugin is installed and configured, you need to verify that it's activated on each project you work on (it should be done automatically thanks to the eclipse settings committed into the repository): 
 
 * Right click on a project's root folder, select `Properties`.
-* Go to `CheckStyle`, and tick the `Checkstyle active for this project` box.
+* Go to `CheckStyle`, make sure that the `Checkstyle active for this project` box is checked.
+* Make sure the checkbox `Use simple configuration` on the right is _not_ checked.
 * Make sure the configuration `Yseop Code Checks (Global)` is selected in the list below.
 * Apply and close.
 
@@ -36,7 +40,7 @@ You should now see the code style 'errors' highlighted in your editor.
 To try and fix these 'errors', you need to add a code formatter to Eclipse:
 
 * Go to `Window -> Preferences -> Java -> Code Style -> Formatter`.
-* Click on `Import`, and select [red]`codesyle/Yseop_Code_Formatter.xml`.
+* Click on `Import`, and select [red]`codequality/java/codeFormatter/Yseop_Code_Formatter.xml`.
 * Apply and Close.
 
 To make sure the formatter will be used by each of your project:
