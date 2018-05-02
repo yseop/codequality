@@ -20,7 +20,7 @@ First, you need to install the http://checkstyle.org/eclipse-cs/#!/[CheckStyle P
 You'll see a list of two already existing configuration (Google and Sun):
 
 * Click on `New` and in the new window select `External Configuration File`.
-* Put the name `Yseop Code Checks` in the `Name` box, then click on `Browse`, and select [red]`codequality/java/codeChecks/Yseop_Code_Checks.xml`.
+* Put the name [red]`Yseop Code Checks` (the name is important) in the `Name` box, then click on `Browse`, and select [red]`codequality/java/codeChecks/Yseop_Code_Checks.xml`.
 * Then click on `Set as default`, and finally, `Apply and Close`.
 
 Eclipse will prompt you about rebuilding the projects, select `Yes`.
