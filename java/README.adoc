@@ -35,6 +35,16 @@ Now that the CheckStyle plugin is installed and configured, you need to verify t
 
 You should now see the code style 'errors' highlighted in your editor.
 
+=== Maven CheckStyle Connector
+
+To avoid errors in your project because of the `pom` chekstyle building step, we need to install the `m2e-code-quality` connector.
+
+* Go to https://marketplace.eclipse.org/content/m2e-code-quality[]
+* Drag and drop the `install` button into your eclipse, and install the connector.
+* Restart Eclipse.
+
+After this, your project should be automatically configured thanks to the `.checkstyle` files present in the Yseop repositories.
+
 == Eclipse Formatter
 
 To try and fix these 'errors', you need to add a code formatter to Eclipse:
