@@ -1,1 +1,3 @@
 = codequality
+
+Please see the readme link:java/README.adoc[java/README.adoc]
