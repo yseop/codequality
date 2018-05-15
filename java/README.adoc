@@ -25,13 +25,7 @@ You'll see a list of two already existing configurations (Google and Sun):
 
 Eclipse will prompt you about rebuilding the projects, select `Yes`.
 
-Now that the CheckStyle plugin is installed and configured, you need to verify that it's activated on each project you work on (it should be done automatically thanks to the eclipse settings committed into the repository): 
-
-* Right click on a project's root folder, select `Properties`.
-* Go to `CheckStyle`, make sure that the `Checkstyle active for this project` box is checked.
-* Make sure the checkbox `Use simple configuration` on the right is _not_ checked.
-* Make sure the configuration `Yseop Code Checks (Global)` is selected in the list below.
-* Apply and close.
+If you already are on a branch from an Yseop project, the checkstyle environment configuration will be automatic.
 
 You should now see the code style 'errors' highlighted in your editor.
 
