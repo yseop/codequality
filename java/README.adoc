@@ -52,8 +52,9 @@ To be sure not to forget to format your code, you can set a `Save Actions`, a se
 * Tick the `Perform the selected action on save` box.
 * Then tick the `Format source code` box, and make sur the `Format all lines` option is selected.
 * Also tick the `Organize imports` box. This will be discussed in the following chapter.
-* And finally tick the `Additional Actions` box.
-* Apply and Close.
+* Tick the `Additional Actions` box.
+* Click on `Configure …`. Within the tab `Code Style`, check the box `Use blocks in if/while/for/do statements` (leave `always`)
+* Click Ok, Apply and Close.
 
 To make sure the save actions will be the same for each of your projects:
 
