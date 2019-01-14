@@ -4,14 +4,33 @@
 :revnumber: 1.0
 :icons: font
 :source-highlighter: coderay
+:sectanchors:
 
-This document's goal is to show how to enforce the Yseop Code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]).
+This document's goal is to show how to enforce the Yseop code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]).
+
+== Introduction
+
+Developers at Yseop can choose their preferred IDE among: 
+
+* Eclipse (most common use), 
+
+* IntelliJ (most recently used), 
+
+* and maybe others.
+
+In order to avoid code changes (and merge conflicts or whatever) when developers work with different IDEs on the same project, we have to find a common code Formatter configuration.
+
+As most of the codebase has been formatted with Eclipse code formatter, we will keep Eclipse code formatter as the reference and try to configure the other IDEs to match Eclipse configuration.
 
 == Prerequisite
 
 To be able to use the Yseop check style and formatter, you must first clone this repository (git@github.com:yseop/codequality.git) to have access to the files.
 
-== Eclipse CheckStyle Plugin
+This repository embed a few test files in the folder `java/template`. Once your IDE settings are done, try to reformat these template files and check with `git diff` that they are unchanged. See in each IDE section to reformat a set of files.
+
+== Eclipse
+
+=== Eclipse CheckStyle Plugin
 
 First, you need to install the http://checkstyle.org/eclipse-cs/#!/[CheckStyle Plugin] (drag and drop the [red]`install` button into your Eclipse workspace window, to trigger the installation).
 
@@ -29,7 +48,7 @@ If you already are on a branch from an Yseop project, the checkstyle environment
 
 You should now see the code style 'errors' highlighted in your editor.
 
-== Eclipse Formatter
+=== Eclipse Formatter
 
 To try and fix these 'errors', you need to add a code formatter to Eclipse:
 
@@ -44,7 +63,9 @@ To make sure the formatter will be used by each of your project:
 
 Now to format your code, you can use the `Ctrl + Shift + F` shortcut in any Java file. It also works if you select a specific line.
 
-== Save Actions
+You can also format a folder with a right click on this folder and `source -> reformat code` and `source -> optimize imports`.
+
+=== Save Actions
 
 To be sure not to forget to format your code, you can set a `Save Actions`, a set of actions that will be triggered each time you save a modification in your code.
 
@@ -61,7 +82,7 @@ To make sure the save actions will be the same for each of your projects:
 * Right click on a project's root folder, select `Properties`.
 * Go to `Java Editors -> Save Actions`, and make sure the `Enable project specific settings` box is *_not_* checked.
 
-== Imports
+=== Imports
 
 Imports organization is also important for a standardized code style:
 
@@ -80,3 +101,70 @@ To make sure the imports organization will be the same for each of your project:
 * Go to `Java Code Style -> Organize Imports`, and make sur the `Enable project specific settings` box is *_not_* checked.
 
 You can now reorganize your imports by using `Ctrl + Shift + o`, or by just saving a modification, thanks to the save actions.
+
+== IntelliJ
+
+Note: in IntelliJ, a plugin configuration is for current project only. Therefore, you'll need to configure each project you're working on.
+
+=== Code formatter
+
+To match Eclipse code formatter configuration, we will use the IntelliJ plugin link:https://plugins.jetbrains.com/plugin/6546-eclipse-code-formatter[Eclipse code formatter]
+
+Notes: 
+
+1. The standard IntelliJ code formatter has options that won't be available with this plugin, but the aim (see link:#_introduction[Introduction]) is to keep a common configuration between diffrent IDEs.
+
+1. Tries to configure the IntelliJ standard code formatter to match the Eclipse code formatter settings weren't successfull: there were always differences between both formatters (especially in Javadoc, empty blocks and white lines).
+
+==== Installation
+
+Install the Eclipse code Formatter plugin from IntelliJ settings:
+
+- link:http://www.jetbrains.com/idea/webhelp/installing-updating-and-uninstalling-repository-plugins.html[Tutorial: Installing, Updating and Uninstalling Repository Plugins]
+
+- link:http://plugins.jetbrains.com/plugin/?idea&id=6546[Plugin repository page]
+
+==== Configuration
+
+- Go to `Settings -> Other settings -> Eclipse code formatter`,
+
+- Check `Use Eclipse code formatter` (it's not automatically enabled),
+
+- Verify that `Enable Java` is checked,
+
+- Choose `Custom Eclipse location (4.5+ / Mars+)` and browse to your Eclipse installation folder (Warning: Misconfiguration problems have been detected with both options Eclipse 4.4 and Eclipse 4.9),
+
+- Set the path to Eclipse formatter config file `{PATH_TO_CODEQUALITY_REPOSITORY}/java/codeFormatter/Yseop_Code_Formatter.xml`,
+
+- The plugin should automatically detect the profile `Yseop code Formatter`,
+
+- Check `Optimize imports`,
+
+- Check `Import order -> Manual configuration` and leave the field blank to force alphabetical sorting,
+
+- Click OK.
+
+image::settings.png[]
+
+Now to format your code, you can use the `Code -> Reformat code` menu in any Java file. It also works if you select a specific line.
+
+You can also format a folder with a right click on this folder and `Reformat Code` and `Optimize Imports`.
+
+=== Save actions
+
+To be sure not to forget to format your code, you can set a `Save Actions`, a set of actions that will be triggered each time you save a modification in your code.
+
+* Install the plugin `Save Actions`
+* Go to `File -> Settings -> Other settings -> Save Actions`.
+* Tick the 3 options in `General` panel: 
+- `Activate save actions on save`, 
+- `Activite save actions on shortcut`, 
+- `No action if compile errors`.
+* Then tick the `Optimize imports` box, and the `Reformat file` box.
+* Then tick the boxes:
+- `Add missing @Override annotations`, 
+- `Add blocks to if/while/for statements`,
+- `Remove explicit generic type for diamond` 
+- and `Remove unnecessary semicolon` boxes.
+* Click Ok.
+
