@@ -116,7 +116,7 @@ Notes:
 
 1. Tries to configure the IntelliJ standard code formatter to match the Eclipse code formatter settings weren't successfull: there were always differences between both formatters (especially in Javadoc, empty blocks and white lines).
 
-1. *Since the plugin will use the Eclipse formatter, you need to install Eclipse and configure its code formatter as detailled in* link:#_eclipse[Eclipse]
+1. *Since the plugin will use the Eclipse formatter, you need to install Eclipse first and configure its code formatter as detailled in* link:#_eclipse[Eclipse]
 
 ==== Installation
 
