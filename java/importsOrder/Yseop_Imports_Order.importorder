@@ -1,8 +1,10 @@
 #Organize Import Order
 #Fri Nov 22 08:38:33 CET 2019
-5=org
-4=lombok
-3=javax
-2=java
-1=io
-0=com
+7=org
+6=net
+5=lombok
+4=javax
+3=java
+2=io
+1=com
+0=ch
