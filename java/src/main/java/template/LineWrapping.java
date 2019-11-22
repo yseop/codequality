@@ -118,6 +118,7 @@ public class LineWrapping {
     }
 
     enum ExampleColor {
+
         GREEN(0, 255, 0),
         RED(255, 0, 0);
 
