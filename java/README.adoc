@@ -39,7 +39,7 @@ First, you need to install the http://checkstyle.org/eclipse-cs/#!/[CheckStyle P
 You'll see a list of two already existing configurations (Google and Sun):
 
 * Click on `New` and in the new window select `External Configuration File`.
-* Put the name [red]`Yseop Code Checks` (the name is important) in the `Name` box, then click on `Browse`, and select [red]`codequality/java/codeChecks/Yseop_Code_Checks.xml`.
+* Put the name [red]`Yseop Code Checks` (the name is important) in the `Name` box, then click on `Browse`, and select [red]`{PATH_TO_CODEQUALITY_REPOSITORY}/java/codeChecks/Yseop_Code_Checks.xml`.
 * Then click on `Set as default`, and finally, `Apply and Close`.
 
 Eclipse will prompt you about rebuilding the projects, select `Yes`.
@@ -53,7 +53,7 @@ You should now see the code style 'errors' highlighted in your editor.
 To try and fix these 'errors', you need to add a code formatter to Eclipse:
 
 * Go to `Window -> Preferences -> Java -> Code Style -> Formatter`.
-* Click on `Import`, and select [red]`codequality/java/codeFormatter/Yseop_Code_Formatter.xml`.
+* Click on `Import`, and select [red]`{PATH_TO_CODEQUALITY_REPOSITORY}/java/codeFormatter/Yseop_Code_Formatter.xml`.
 * Apply and Close.
 
 To make sure the formatter will be used by each of your project:
@@ -84,14 +84,10 @@ To make sure the save actions will be the same for each of your projects:
 
 === Imports
 
-Imports organization is also important for a standardized code style:
+Imports organization is also important for a standardized code style. The rule is to sort imports alphabetically.
 
 * Go to `Window -> Preferences -> Java -> Code Style -> Organize Imports`.
-* Rearrange the import in alphabetical order, for example :
-** `com`
-** `java`
-** `javax`
-** `org`
+* Click on `Import…` and select the file `{PATH_TO_CODEQUALITY_REPOSITORY}/java/importsOrder/Yseop_Imports_Order.importorder`.
 * Make sur the `Number of imports needed for .\*` and `Number of static imports needed for .*` are set to 99.
 * Apply and close.
 
@@ -142,7 +138,7 @@ Install the Eclipse code Formatter plugin from IntelliJ settings:
 
 - Check `Optimize imports`,
 
-- Check `Import order -> Manual configuration` and leave the field blank to force alphabetical sorting,
+- Check `Import order -> From file` and select `{PATH_TO_CODEQUALITY_REPOSITORY}/java/importsOrder/Yseop_Imports_Order.importorder`,
 
 - Click OK.
 
@@ -169,4 +165,3 @@ To be sure not to forget to format your code, you can set a `Save Actions`, a se
 - `Remove explicit generic type for diamond` 
 - and `Remove unnecessary semicolon` boxes.
 * Click Ok.
-

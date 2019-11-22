@@ -1,0 +1,10 @@
+#Organize Import Order
+#Fri Nov 22 08:38:33 CET 2019
+7=org
+6=net
+5=lombok
+4=javax
+3=java
+2=io
+1=com
+0=ch
