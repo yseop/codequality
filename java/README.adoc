@@ -65,7 +65,7 @@ To try and fix these 'errors', you need to add a code formatter to Eclipse:
 To make sure the formatter will be used by each of your project:
 
 * Right click on a project's root folder, select btn:[Properties].
-* Go to menu:Java Code Style[Formatter], and make sur the btn:[Enable project specific settings] box is *_not_* checked.
+* Go to menu:Java Code Style[Formatter], and make sure the btn:[Enable project specific settings] box is *_not_* checked.
 
 Now to format your code, you can use the kbd:[Ctrl + Shift + F] shortcut in any Java file. It also works if you select a specific line.
 
@@ -102,7 +102,7 @@ Imports organization is also important for a standardized code style. The rule i
 To make sure the imports organization will be the same for each of your project:
 
 * Right click on a project's root folder, select btn:[Properties].
-* Go to menu:Java Code Style[Organize Imports], and make sur the btn:[Enable project specific settings] box is *_not_* checked.
+* Go to menu:Java Code Style[Organize Imports], and make sure the btn:[Enable project specific settings] box is *_not_* checked.
 
 You can now reorganize your imports by using kbd:[Ctrl + Shift + O], or by just saving a modification, thanks to the save actions.
 
