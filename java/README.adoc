@@ -7,6 +7,7 @@
 :icons: font
 :source-highlighter: coderay
 :sectanchors:
+:imagesdir: readme-img
 
 This document's goal is to show how to enforce the Yseop code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]).
 
@@ -78,7 +79,7 @@ To be sure not to forget to format your code, you can set “save actions”, a 
 
 * Go to menu:Window[Preferences > Java > Editor > Save Actions].
 * Tick the btn:[Perform the selected action on save] box.
-* Then tick the btn:[Format source code] box, and make sur the btn:[Format all lines] option is selected.
+* Then tick the btn:[Format source code] box, and make sure the btn:[Format all lines] option is selected.
 * Also tick the btn:[Organize imports] box. This will be discussed in the following chapter.
 * Tick the btn:[Additional Actions] box.
 * Click on btn:[Configure…]. Within the “Code Style” tab, check the box btn:[Use blocks in if/while/for/do statements] (leave “always”).
@@ -96,7 +97,7 @@ Imports organization is also important for a standardized code style. The rule i
 
 * Go to menu:Window[Preferences > Java > Code Style > Organize Imports].
 * Click on btn:[Import…] and select the file `{PATH_TO_CODEQUALITY_REPOSITORY}/java/importsOrder/Yseop_Imports_Order.importorder`.
-* Make sur the btn:[Number of imports needed for .\*] and btn:[Number of static imports needed for .*] are set to{nbsp}99.
+* Make sure the btn:[Number of imports needed for .\*] and btn:[Number of static imports needed for .*] are set to{nbsp}99.
 * Apply and close.
 
 To make sure the imports organization will be the same for each of your project:
@@ -158,7 +159,11 @@ Install the Eclipse code Formatter plugin from IntelliJ settings:
 - Click btn:[OK].
 
 [[settings-pic]]
-image::settings.png[]
+image::settings.png[Settings window screenshot]
+
+- Also make sure the btn:[Class count to use import with '+++*+++'] and btn:[Names count to use static import with '+++*+++'] are set to{nbsp}99:
++
+image::imports-intellij.png[Settings window screenshot for imports]
 
 Now to format your code, you can use the menu:Code[Reformat code] menu in any Java file. It also works if you select a specific line.
 
