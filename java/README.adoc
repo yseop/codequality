@@ -154,10 +154,14 @@ Install the Eclipse code Formatter plugin from IntelliJ settings:
 
 - Check menu:Import order[From file] and select `{PATH_TO_CODEQUALITY_REPOSITORY}/java/importsOrder/Yseop_Imports_Order.importorder`,
 
-- Click btn:[OK].
-
 [[settings-pic]]
 image::settings.png[Settings window screenshot]
+
+- Add filetype exclusions, otherwise the IDE may wreck, for example, the alignment of environment variables in the Jenkinsfiles and perform lots of similar unwanted changes in property files:
+
+image::type-exclusions.png[Filetype exclusions]
+
+- Click btn:[OK].
 
 - Also make sure the btn:[Class count to use import with '+++*+++'] and btn:[Names count to use static import with '+++*+++'] are set to{nbsp}99:
 +
