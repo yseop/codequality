@@ -112,6 +112,7 @@ You can now reorganize your imports by using kbd:[Ctrl + Shift + O], or by just 
 
 NOTE: In IntelliJ, a plugin configuration is for current project only.
 Therefore, you'll need to configure each project you're working on.
+Consider creating a dedicated profile (with a name like “Yseop”) in the formatter’s settings to be able to reconfigure it faster.
 
 
 === Code formatter
@@ -135,14 +136,14 @@ Install the Eclipse code Formatter plugin from IntelliJ settings:
 
 ==== Configuration
 
-- Go to menu:Settings[Other settings > Eclipse code formatter],
+- Go to menu:File[Settings > Other settings > Eclipse code formatter],
 
 - Check btn:[Use Eclipse code formatter] (it's not automatically enabled),
 
 - Verify that btn:[Enable Java] is checked,
 
-- If the btn:[Bundled Eclipse] option is available in your IntelliJ version (see <<settings-pic, screenshot>>), select it.footnote:[
-    It seems that it is less prone to missing JAR files required by the plugin.
+- If the btn:[Bundled Eclipse] option is available in your IntelliJ and plugin version (see <<settings-pic, screenshot>>), select it.footnote:[
+    It seems that it is less prone to missing JAR files required by the plugin, but was removed at some point.
 ] *Otherwise:*
 ** Choose btn:[Custom Eclipse location (4.5+ / Mars+)] and browse to your Eclipse installation folder (Warning: Misconfiguration problems have been detected with both options Eclipse 4.4 and Eclipse 4.9),
 
