@@ -136,7 +136,7 @@ Install the Eclipse code Formatter plugin from IntelliJ settings:
 
 ==== Configuration
 
-- Go to menu:File[Settings > Other settings > Eclipse code formatter],
+- Go to menu:File[Settings > Other settings > (Adapter for) Eclipse code formatter],
 
 - Check btn:[Use Eclipse code formatter] (it's not automatically enabled),
 
