@@ -1899,3 +1899,10 @@ _expected=(
 Sometimes, one function calls another Bash script, thus spawning a subprocess.
 In such cases, you may need to export your mock via `export -f my_mock` in your test so that the final Bash script uses your mock instead of the real command.
 ====
+
+
+== Further reading and watching
+
+* https://drive.google.com/file/d/1oSxE6qZXBAzRKEaVJnXdufy7jYvGaYf4/view?usp=sharing[Internal technical presentation (French).]
+
+* `man bash` (`/` to search, `n` and `N` for next and previous occurrences).
