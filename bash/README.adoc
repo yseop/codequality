@@ -1164,6 +1164,71 @@ local -n __ref=$1
 ====
 
 
+=== Saving variables for later
+
+If you need to store the values of variables for later (possibly even for another execution of the script, or for another script altogether), you can use `declare -p`:
+
+> display the attributes and value of each NAME
+
+This does not sound like much, but…
+
+[source, bash]
+----
+username='Foo Bar'
+password='tom@to>te$t'
+
+config=(
+    -e 'yo yeah'
+    --plop
+    omg
+)
+
+declare -p username password config > save.sh
+----
+
+.Content of `save.sh` after execution
+[source, bash]
+----
+declare -- username="Foo Bar"
+declare -- password="tom@to>te\$t"
+declare -a config=([0]="-e" [1]="yo yeah" [2]="--plop" [3]="omg")
+----
+
+This prints *perfectly valid and robust commands* that can be run to *declare clones* of the given variables, and this works for *any kind of variable*, even associative arrays.
+
+[TIP]
+====
+*Functions* can also be processed this way if you add the `-f` flag.
+====
+
+Once your saved definition file is created, you can load the values by sourcing that file with `.`:
+
+[source, bash]
+----
+printf 'Before: Username: %s\n' "${username:-Empty}"
+printf 'Before: Password: %s\n' "${password:-Empty}"
+printf 'Before: Config:   %s\n' "${config[*]:-Empty}"
+
+. save.sh
+
+printf 'After:  Username: %s\n' "${username:-Empty}"
+printf 'After:  Password: %s\n' "${password:-Empty}"
+printf 'After:  Config:   %s\n' "${config[*]:-Empty}"
+----
+
+This yields:
+
+[source]
+----
+Before: Username: Empty
+Before: Password: Empty
+Before: Config:   Empty
+After:  Username: Foo Bar
+After:  Password: tom@to>te$t
+After:  Config:   -e yo yeah --plop omg
+----
+
+
 === `{startsb}` and `{startsb}{startsb}`
 
 There are a couple of differences between those.
