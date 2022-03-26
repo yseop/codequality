@@ -240,15 +240,24 @@ This is basically only useful when you’re implementing a “split” function 
 
 [source, bash]
 ----
-  $ split() { (IFS=$1; printf '%s\n' $2) }
+split() {
+    (
+        IFS=$1
+        printf '%s\n' $2
+    )
+}
+----
 
-  $ split a falalap
+.`split a falalap`
+----
 f
 l
 l
 p
+----
 
-  $ split l falalap
+.`split l falalap`
+----
 fa
 a
 ap
@@ -1175,12 +1184,12 @@ As a consequence, `{quot}`-s are not needed within it unless you have hardcoded 
 |
 [source, bash]
 ----
-if [[ "${foo}/plop" = "$(bar)" ]]
+[[ "${foo}/plop" = "$(bar)" ]]
 ----
 |
 [source, bash]
 ----
-if [[ ${foo}/plop = $(bar) ]]
+[[ ${foo}/plop = $(bar) ]]
 ----
 |===
 +
@@ -1192,12 +1201,12 @@ if [[ ${foo}/plop = $(bar) ]]
 |
 [source, bash]
 ----
-if [ ${foo}/plop = $(bar) ]
+[ ${foo}/plop = $(bar) ]
 ----
 |
 [source, bash]
 ----
-if [ "${foo}/plop" = "$(bar)" ]
+[ "${foo}/plop" = "$(bar)" ]
 ----
 |===
 
@@ -1570,4 +1579,258 @@ then
     exit 1
 fi
 ----
+====
+
+
+=== Mock annoying commands
+
+Sometimes during tests, it is not desirable to actually execute some commands, typically those that send HTTP requests:
+
+.`functions.sh`
+[source, bash]
+----
+# $1    Directory name.
+get_file() {
+    curl -L "https://yseop.com/${1:?}/file.json"
+}
+----
+
+In such cases, it is possible to *define a function* with the same name as the command we want to avoid executing.
+The function will take precedence and overshadow the command.
+
+.`my-tests.sh`
+[source, bash]
+----
+curl() {
+    # No-op for now.
+    :
+}
+
+# Check that the function does not crash.
+if ! get_file foo
+then
+    echo Test failed
+    exit 1
+fi
+----
+
+Building on that, you can mock the *output* of the command:
+
+[source, bash]
+----
+curl() {
+    echo '{ "status": "ok" }'
+}
+
+if [[ $(get_file foo) != '{ "status": "ok" }' ]]
+then
+    echo Test failed
+    exit 1
+fi
+----
+
+It is also generally a good idea to check that the mock was called with the *expected arguments*:
+
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/foo/file.json ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+If *multiple calls*, with different parameters or expected output, have to be made to the mock, you can:
+
+. Define the function over and over again (cumbersome but straightforward):
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/foo/file.json ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/bar/file.json ]]
+    then
+        echo '{ "fruit": "apricot" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+. Use a single definition with more possibilities:
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L ]]
+    then
+        case "$2" in
+            https://yseop.com/foo/file.json)
+                echo '{ "status": "ok" }'
+                ;;
+            
+            https://yseop.com/bar/file.json)
+                echo '{ "fruit": "apricot" }'
+                ;;
+            
+            *)
+                echo Test failed
+                exit 1
+                ;;
+        esac
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+. Use global variables for the expected parameters and / or for the output:
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = ${_expected_curl_arg_2?} ]]
+    then
+        printf '%s\n' "${_mocked_curl_output?}"
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+_expected_curl_arg_2=https://yseop.com/foo/file.json
+_mocked_curl_output='{ "status": "ok" }'
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+
+_expected_curl_arg_2=https://yseop.com/bar/file.json
+_mocked_curl_output='{ "fruit": "apricot" }'
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+If *one execution* of the function to be tested generates *multiple distinct calls* to the mock, you can use a global counter to differentiate the calls (or just to check that the number of calls is the expected count).
+The tricky part is that since most of the time commands and functions are called from within subshell environments, the counter’s increment is lost between calls if you just use a variable, and you have to write its value to a temporary file to make it _really_ shared:
+
+[source, bash]
+----
+echo 0 > "$TEST_TMP"/calls
+
+curl() {
+    # Get
+    local nb_calls=$(cat "$TEST_TMP"/calls)
+    # Increment
+    ((nb_calls++)) || true
+    # Save
+    printf '%d\n' "$nb_calls" > "$TEST_TMP"/calls
+    
+    if [[ $# -eq 2 && $1 = -L ]]
+    then
+        if [[ $nb_calls -eq 1 && $2 = https://yseop.com/foo/file.json ]]
+        then
+            echo '{ "status": "ok" }'
+        elif [[ $nb_calls -eq 2 && $2 = https://yseop.com/bar/file.json ]]
+        then
+            echo '{ "fruit": "apricot" }'
+        else
+            echo Test failed
+            exit 1
+        fi
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+# Check total number of calls to the mock.
+[[ $(cat "$TEST_TMP"/calls) -eq 2 ]]
+----
+
+[TIP]
+====
+This counter trick is also useful to make sure some operations are performed in the expected order.
+====
+
+If the number of “expected arguments” to check is too high, there are several ways to simplify the process (often at the cost of robustness, though):
+
+.Dirty check with possible false positives if some arguments contain spaces
+[source, bash]
+----
+curl() {
+    if [[ $* = '-L https://yseop.com/foo/file.json' ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+.Dirty check with possible false positives if some arguments contain a character that, at least, we can choose
+[source, bash]
+----
+curl() {
+    if (
+        IFS='|'
+        [[ $* = '-L|https://yseop.com/foo/file.json' ]]
+    )
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+.Check with possible false positives if some arguments contain a newline; version with global expectation array variable
+[source, bash]
+----
+curl() {
+    if (
+        IFS=$'\n'
+        [[ $* = ${_expected[*]} ]]
+    )
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+_expected=(
+    -L
+    https://yseop.com/foo/file.json
+)
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+----
+
+[NOTE]
+====
+Sometimes, one function calls another Bash script, thus spawning a subprocess.
+In such cases, you may need to export your mock via `export -f my_mock` in your test so that the final Bash script uses your mock instead of the real command.
 ====
