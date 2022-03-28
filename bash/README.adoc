@@ -26,7 +26,7 @@ Try to be *consistent* within a Git repository, and even more so within a single
 Variables and functions:: `snake_case`
 
 Global `readonly` variables that do not depend on the script’s input and are set early (basically; your mileage may vary)::
-`FULL_CAPS_SNAKE_CASE`
+`FULL_CAPS_SNAKE_CASE` (aka `SCREAMING_SNAKE_CASE`)
 +
 [CAUTION]
 ====
@@ -38,7 +38,7 @@ Global readonly variables behave in a specific way and tend to prevent the use o
 bash: local: x: readonly variable
 ----
 
-This all-caps rule prevents such collisions and allows to name our local variables without needless worries, in addition to https://en.wikipedia.org/wiki/Constant_(computer_programming)#Naming_conventions[aligning] with what is done in https://en.wikipedia.org/wiki/Naming_convention_(programming)#Language-specific_conventions[countless programming languages].
+This all-caps rule prevents such collisions and allows to name our local variables without needless worries, in addition to https://en.wikipedia.org/wiki/Constant_(computer_programming)#Naming_conventions[aligning] with what is done in https://en.wikipedia.org/wiki/Naming_convention_(programming)#Language-specific_conventions[countless programming languages] and https://google.github.io/styleguide/shellguide.html#s7.3-constants-and-environment-variable-names[renowned style guides].
 ====
 
 Script files:: `kebab-case.sh`
@@ -156,6 +156,8 @@ esac
 
 ==== Here documents
 
+(The `<<` technique used to feed multiple lines into a command, typically for help blurbs; see `man bash`.)
+
 * [x] The tag used to denote the end of the document should follow the `+_[A-Z][A-Z0-9_]*_+` format: `+_HELP_+`, `+_JSON_+`, `+_MESSAGE_+`…
 
 * [x] The tag should be meaningful and suit the document’s purpose:
@@ -221,7 +223,7 @@ Things that may cause issues in the long run or that may hamper initial developm
 
 === Unprotected expansions
 
-When writing `$foo` on its own instead of `"$foo"`, you’re asking the Bash interpreter to split the contents of the `foo` variable into multiple words in every place where a character of `IFS` (by default this includes spaces, tabs and newlines) is found:
+When writing `$foo` on its own instead of `"$foo"`, you’re asking the Bash interpreter to split the contents of the `foo` variable into multiple words in every place where a character of the `IFS` variable (“Internal Field Separator” – by default this includes spaces, tabs and newlines) is found:
 
 [source, bash]
 ----
@@ -266,6 +268,16 @@ ap
 In other cases, if you _need_ a variable to be expanded into _multiple_ words to provide arguments to a command, use an indexed array, as this is one of the things they were made for.
 This takes away all concerns regarding potential unwanted word-splitting and `IFS` itself.
 This is why not quoting a variable “on purpose” is sometimes described as an “anti-pattern”: it can often be harmful, and has no benefit whatsoever with respect to using arrays.
+
+[quote, Google, https://google.github.io/styleguide/shellguide.html#quoting]
+____
+* Always quote strings containing variables, command substitutions, spaces or shell meta characters, unless careful unquoted expansion is required or it’s a shell-internal integer.
+(*Yseop note:* Even internal integers can get split if `IFS` contains digits, so beware.)
+
+* Use arrays for safe quoting of lists of elements, especially command-line flags.
+
+* Use `"$@"` unless you have a specific reason to use `$*`, such as simply appending the arguments to a string in a message or log.
+____
 
 [cols = "2*a", options = header]
 |===
@@ -348,7 +360,9 @@ call_awk file3
 |===
 
 * [x] Store your command (or arguments, or options) in an indexed array instead, especially if that command must be built dynamically.
-See https://stackoverflow.com/a/71600549/9089759[this StackOverflow answer].
+See https://stackoverflow.com/a/71600549/9089759[this StackOverflow answer] and https://google.github.io/styleguide/shellguide.html#arrays[Google’s guide].
++
+> Using a single string for multiple command arguments should be avoided, as it inevitably leads to authors using `eval` or trying to nest quotes inside the string, which does not give reliable or readable results and leads to needless complexity.
 
 * [x] For cases where you need to handle a variable whose name must be deduced from another variable: use `declare -n foo=$bar`, `local -n foo=$bar`, or `${!bar}`.
 This is also covered in https://stackoverflow.com/a/71600549/9089759[that same StackOverflow answer].
@@ -599,6 +613,13 @@ At Yseop, we once had a release note that was heavily truncated because the syst
 (Idem, and would benefit from a clear formatting string; safer to use `printf 'Plop: %s\n' "$plop"`.)
 
 
+=== (Not) parsing `ls`’s output
+
+`ls` is for humans and is far too unreliable.
+Machines prefer `find`, `stat`, or globbing patterns like `foo/*`.
+(This topic is heavily covered on the web.)
+
+
 == Overkill
 
 Things that can be done in more concise or clear ways.
@@ -683,6 +704,23 @@ tr -cd 'a-z' < "$f"
 docker login -u me --password-stdin <<< "$PASSWORD"
 ----
 |===
+
+
+=== `sed`’s `-e`
+
+This option is https://unix.stackexchange.com/a/387528[virtually _never_ useful].
+It is even generally harmful as far as readability is concerned, since you can, instead of using it, write your `sed` script on multiple lines, possibly even with comments:
+
+[source, bash]
+----
+sed '
+    # Censor.
+    /crap/ d
+
+    # Yell.
+    s/.*/\U&/g
+' "$my_file"
+----
 
 
 == Readability
@@ -1906,3 +1944,5 @@ In such cases, you may need to export your mock via `export -f my_mock` in your 
 * https://drive.google.com/file/d/1oSxE6qZXBAzRKEaVJnXdufy7jYvGaYf4/view?usp=sharing[Internal technical presentation (French).]
 
 * `man bash` (`/` to search, `n` and `N` for next and previous occurrences).
+
+* https://google.github.io/styleguide/shellguide.html[The Google guide]. Their conventions are not 100% aligned with ours of course, but this contains useful tips, like the need to split `local foo=$(bar)` into two statements, etc.
