@@ -300,6 +300,15 @@ a
 ap
 ----
 
+… and even then, most of the time `xargs` can be used to avoid both the unprotected expansion _and_ the `IFS` tempering:
+
+[source, bash]
+----
+split() {
+    printf '%s' "$2" | xargs --delimiter "$1" printf '%s\n'
+}
+----
+
 In other cases, if you _need_ a variable to be expanded into _multiple_ words to provide arguments to a command, use an indexed array, as this is one of the things they were made for.
 This takes away all concerns regarding potential unwanted word-splitting and `IFS` itself.
 This is why not quoting a variable “on purpose” is sometimes described as an “anti-pattern”: it can often be harmful, and has no benefit whatsoever with respect to using arrays.
