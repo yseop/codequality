@@ -85,11 +85,46 @@ foo
 Also note that `+#Bar+` is generally used for commented-out code (typically during a debugging session), while explanatory comments should use a leading space: `+# Bar+`.
 
 
+==== Shebang
+
+The battle between `/bin/bash` and `/usr/bin/env bash` has been setting the web ablaze for years.
+None seems inherently better.
+Let’s not care too much about it.
+If one day one of them causes issues in one particular context, we’ll switch to the other there and that’ll be the end of the story.
+Try to keep at least one blank line after the shebang, though.
+
+.Invoke a precise executable; allows to pass options like `-x` to `bash` directly there
+[source, bash]
+----
+#! /bin/bash
+
+# […]
+----
+
+.Use `$PATH` to look for the `bash` program
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# […]
+----
+
+
 ==== Functions
 
 * Favor the more-standardized `foo()` over `function foo` or `function foo()`.
 
-* TODO Opening brace after the name, or on a new line?
+* Preferably with the opening brace after the name, but not extra important.
+As for indentation width, check for consistency, though.
+
+[source, bash]
+----
+foo() {
+    local bar
+    bar=$(plop yo)
+    palala "$bar"
+}
+----
 
 
 ==== `if`
