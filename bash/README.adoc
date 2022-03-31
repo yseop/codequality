@@ -1731,6 +1731,8 @@ fi
 
 === Mock annoying commands
 
+==== Rationale
+
 Sometimes during tests, it is not desirable to actually execute some commands, typically those that send HTTP requests:
 
 .`functions.sh`
@@ -1776,7 +1778,16 @@ then
 fi
 ----
 
-It is also generally a good idea to check that the mock was called with the *expected arguments*:
+[NOTE]
+====
+Sometimes, one function calls another Bash script, thus spawning a subprocess.
+In such cases, you may need to export your mock via `export -f my_mock` in your test so that the final Bash script uses your mock instead of the real command.
+====
+
+
+==== Argument checks
+
+It is generally a good idea to check that the mock was called with the *expected arguments*:
 
 [source, bash]
 ----
@@ -1876,6 +1887,9 @@ _mocked_curl_output='{ "fruit": "apricot" }'
 [[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
 ----
 
+
+==== Call counter
+
 If *one execution* of the function to be tested generates *multiple distinct calls* to the mock, you can use a global counter to differentiate the calls (or just to check that the number of calls is the expected count).
 The tricky part is that since most of the time commands and functions are called from within subshell environments, the counter’s increment is lost between calls if you just use a variable, and you have to write its value to a temporary file to make it _really_ shared:
 
@@ -1919,6 +1933,9 @@ curl() {
 ====
 This counter trick is also useful to make sure some operations are performed in the expected order.
 ====
+
+
+==== Tips for high argument counts
 
 If the number of “expected arguments” to check is too high, there are several ways to simplify the process (often at the cost of robustness, though):
 
@@ -1976,10 +1993,31 @@ _expected=(
 [[ $(get_file foo) = '{ "status": "ok" }' ]]
 ----
 
-[NOTE]
+
+=== Running Bash tests via Jenkins
+
+To automatically run the Bash unit tests during the project’s build, you can add a dedicated stage (possibly in parallel to some other tests):
+
+.`Jenkinsfile`
+[source, groovy]
+----
+pipeline {
+    // […]
+    stages {
+        // […]
+        stage('Script tests') {
+            steps {
+                sh('./path/to/run-tests.sh')
+            }
+        }
+        // […]
+    }
+}
+----
+
+[CAUTION]
 ====
-Sometimes, one function calls another Bash script, thus spawning a subprocess.
-In such cases, you may need to export your mock via `export -f my_mock` in your test so that the final Bash script uses your mock instead of the real command.
+Make sure `run-tests.sh` is executable (`chmod u+x`).
 ====
 
 
