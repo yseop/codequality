@@ -726,7 +726,7 @@ Of course, when in doubt, it’s better to quote, but:
 === Reading input
 
 Many commands can read data by accepting files as parameters, or by getting data on their standard input (which can be made easier via redirections).
-Keep in mind that `cat`’s name stands for “concatenate”, not for “dump this file’s content on stdout because I have a grudge against everything that is not a pipe”.
+https://web.archive.org/web/20220327013356/https://porkmail.org/era/unix/award#cat[Keep in mind that `cat`’s name stands for “concatenate”], not for “dump this file’s content on stdout because I have a grudge against everything that is not a pipe”.
 
 [cols = "2*a", options = header]
 |===
