@@ -1,0 +1,2030 @@
+= Yseop Bash guidelines and tips
+:toc:
+:toclevels: 3
+:imagesdir: readme-images
+
+:do_not:  &#x1F44E; Do not write this
+:instead: &#x1F44D; Write this instead
+
+
+== Style
+
+Things that do not change what’s executed but may derive profit from being harmonized within the company.
+
+
+=== Indentation
+
+To align with other languages used at Yseop, favor:
+
+* [x] Spaces, not hard tabs.
+* [x] Width: 4 (Non-Ops projects) or 2 (Ops projects).
+Try to be *consistent* within a Git repository, and even more so within a single script.
+
+
+=== Naming
+
+Variables and functions:: `snake_case`
+
+Global `readonly` variables that do not depend on the script’s input and are set early (basically; your mileage may vary)::
+`FULL_CAPS_SNAKE_CASE` (aka `SCREAMING_SNAKE_CASE`)
++
+[CAUTION]
+====
+Global readonly variables behave in a specific way and tend to prevent the use of their names for local variables in functions:
+
+[source, bash]
+----
+  $ readonly x=1; f() { local x=2; }; f
+bash: local: x: readonly variable
+----
+
+This all-caps rule prevents such collisions and allows to name our local variables without needless worries, in addition to https://en.wikipedia.org/wiki/Constant_(computer_programming)#Naming_conventions[aligning] with what is done in https://en.wikipedia.org/wiki/Naming_convention_(programming)#Language-specific_conventions[countless programming languages] and https://google.github.io/styleguide/shellguide.html#s7.3-constants-and-environment-variable-names[renowned style guides].
+====
+
+Script files:: `kebab-case.sh`
+
+.All in all
+====
+.`write-plop.sh`
+[source, bash]
+----
+write_text_to_plop() {
+    printf '%s\n' "$1" > "$PATH_TO_PLOP"
+}
+
+readonly PATH_TO_PLOP=foo/bar/plop.txt
+
+the_text=$1
+write_text_to_plop "$the_text"
+----
+====
+
+
+=== Typical elements
+
+==== Comments
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+foo # Bar
+----
+|
+[source, bash]
+----
+# Bar
+foo
+----
+|===
+
+Also note that `+#Bar+` is generally used for commented-out code (typically during a debugging session), while explanatory comments should use a leading space: `+# Bar+`.
+
+
+==== Shebang
+
+The battle between `/bin/bash` and `/usr/bin/env bash` has been setting the web ablaze for years.
+None seems inherently better.
+Let’s not care too much about it.
+If one day one of them causes issues in one particular context, we’ll switch to the other there and that’ll be the end of the story.
+Try to keep at least one blank line after the shebang, though.
+
+.Invoke a precise executable; allows to pass options like `-x` to `bash` directly there
+[source, bash]
+----
+#! /bin/bash
+
+# […]
+----
+
+.Use `$PATH` to look for the `bash` program
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# […]
+----
+
+
+==== Functions
+
+* Favor the more-standardized `foo()` over `function foo` or `function foo()`.
+
+* Preferably with the opening brace after the name, but not extra important.
+As for indentation width, check for consistency, though.
+
+[source, bash]
+----
+foo() {
+    local bar
+    bar=$(plop yo)
+    palala "$bar"
+}
+----
+
+
+==== `if`
+
+[source, bash]
+----
+if foo
+then
+    plop
+else
+    yo
+fi
+----
+
+
+==== `for`, `while`, `until`, `select`
+
+[source, bash]
+----
+for a in plop yo
+do
+    stuff "$a"
+done
+# Idem for “select”.
+----
+
+[source, bash]
+----
+while [[ $a -gt 1 ]]
+do
+    ((a /= 2))
+done
+# Idem for “until”.
+----
+
+[source, bash]
+----
+while ((a /= 2))
+    echo 'Hi there, we’re doing a do-while here instead of while-do.'
+    [[ $a -gt 1 ]]
+do
+    # No-op.
+    :
+done
+# Idem for “until”.
+----
+
+
+==== `case`
+
+[source, bash]
+----
+case "$a" in
+    a) short;;
+    
+    *)
+        long
+        long
+        long
+        ;;
+esac
+----
+
+
+==== Here documents
+
+(The `<<` technique used to feed multiple lines into a command, typically for help blurbs; see `man bash`.)
+
+* [x] The tag used to denote the end of the document should follow the `+_[A-Z][A-Z0-9_]*_+` format: `+_HELP_+`, `+_JSON_+`, `+_MESSAGE_+`…
+
+* [x] The tag should be meaningful and suit the document’s purpose:
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+cat << eof
+<?xml version="1.0" encoding="UTF-8"?>
+<note>
+  <to>You</to>
+</note>
+eof
+----
+|
+[source, bash]
+----
+cat << _XML_
+<?xml version="1.0" encoding="UTF-8"?>
+<note>
+  <to>You</to>
+</note>
+_XML_
+----
+|===
+
+* [x] If there is no particular reason to allow any kind of Bash expansion within the document, quote the opening tag to prevent them altogether, thus making your intentions clear and prevent unwanted dollar disappearances or whatever:
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+cat << _TEXT_
+This should appear as-is: $foo
+_TEXT_
+----
+|
+[source, bash]
+----
+cat << '_TEXT_'
+This should appear as-is: $foo
+_TEXT_
+----
+|===
+
+* [x] Avoid the `+<<-+` syntax (used to remove leading hard tabs) unless you really need it.
+Keep in mind that it does not remove leading spaces, only hard tabs (which we do not use anyway).
+
+
+== Pitfalls
+
+Things that may cause issues in the long run or that may hamper initial development.
+
+
+=== Unprotected expansions
+
+When writing `$foo` on its own instead of `"$foo"`, you’re asking the Bash interpreter to split the contents of the `foo` variable into multiple words in every place where a character of the `IFS` variable (“Internal Field Separator” – by default this includes spaces, tabs and newlines) is found:
+
+[source, bash]
+----
+  $ count() { printf 'I got %d arguments.\n' "$#"; }
+
+  $ txt='foo bar'
+
+  $ count $txt
+I got 2 arguments.
+
+  $ count "$txt"
+I got 1 arguments.
+----
+
+This is basically only useful when you’re implementing a “split” function yourself, and even then it is strongly advised to set `IFS` explicitly and locally (using parentheses):
+
+[source, bash]
+----
+split() {
+    (
+        IFS=$1
+        printf '%s\n' $2
+    )
+}
+----
+
+.`split a falalap`
+----
+f
+l
+l
+p
+----
+
+.`split l falalap`
+----
+fa
+a
+ap
+----
+
+… and even then, most of the time `xargs` can be used to avoid both the unprotected expansion _and_ the `IFS` tempering:
+
+[source, bash]
+----
+split() {
+    printf '%s' "$2" | xargs --delimiter "$1" printf '%s\n'
+}
+----
+
+In other cases, if you _need_ a variable to be expanded into _multiple_ words to provide arguments to a command, use an indexed array, as this is one of the things they were made for.
+This takes away all concerns regarding potential unwanted word-splitting and `IFS` itself.
+This is why not quoting a variable “on purpose” is sometimes described as an “anti-pattern”: it can often be harmful, and has no benefit whatsoever with respect to using arrays.
+
+[quote, Google, https://google.github.io/styleguide/shellguide.html#quoting]
+____
+* Always quote strings containing variables, command substitutions, spaces or shell meta characters, unless careful unquoted expansion is required or it’s a shell-internal integer.
+(*Yseop note:* Even internal integers can get split if `IFS` contains digits, so beware.)
+
+* Use arrays for safe quoting of lists of elements, especially command-line flags.
+
+* Use `"$@"` unless you have a specific reason to use `$*`, such as simply appending the arguments to a string in a message or log.
+____
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+opts='-p -v'
+mkdir $opts path/to/plop.log
+----
+|
+[source, bash]
+----
+opts=(-p -v)
+mkdir "${opts[@]}" path/to/plop.log
+----
+|===
+
+
+=== `eval`
+
+`eval` has several major issues:
+
+* It is known to often open the door for code injection, which is a significant security threat.
+
+* Especially when variables or whitespace are involved, it forces developers to “think forward” and nest quotation marks while trying to figure out _which_ step will need _which_ quotes to perform _which_ operation.
+Furthermore, the solution in such cases often depends on the specific matter at hand.
+
+Before using `eval`, make extra sure you cannot:
+
+* [x] Directly run your command without storing it in a variable beforehand (you can put it in a function if it is used multiple times):
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+cmd='grep -r foo bar/'
+eval "$cmd"
+----
+|
+[source, bash]
+----
+grep -r foo bar/
+----
+|===
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+awk_script='/foo/ { print $2 }'
+cmd='awk "$awk_script"'
+
+eval "$cmd" file1
+eval "$cmd" file2
+eval "$cmd" file3
+----
+|
+[source, bash]
+----
+call_awk() {
+    local awk_script='/foo/ { print $2 }'
+    awk "$awk_script"
+}
+
+call_awk file1
+call_awk file2
+call_awk file3
+----
+|===
+
+* [x] Store your command (or arguments, or options) in an indexed array instead, especially if that command must be built dynamically.
+See https://stackoverflow.com/a/71600549/9089759[this StackOverflow answer] and https://google.github.io/styleguide/shellguide.html#arrays[Google’s guide].
++
+> Using a single string for multiple command arguments should be avoided, as it inevitably leads to authors using `eval` or trying to nest quotes inside the string, which does not give reliable or readable results and leads to needless complexity.
+
+* [x] For cases where you need to handle a variable whose name must be deduced from another variable: use `declare -n foo=$bar`, `local -n foo=$bar`, or `${!bar}`.
+This is also covered in https://stackoverflow.com/a/71600549/9089759[that same StackOverflow answer].
+See also <<pass_by_name, this section>> regarding `declare -n` and `local -n`.
+
+
+=== `set -e` and others
+
+(See `help set` for details.)
+
+
+==== `-e`: “Exit immediately if a command exits with a non-zero status.”
+
+Putting `set -e` at the beginning of a script is often used to prevent “snowballing”: most errors will cause the script to immediately halt.
+
+This is not _always_ relevant, though:
+
+* It is not as easy to master as it seems.
+There are many contexts in which commands are legitimately allowed by `set -e` to fail (typically in conditionals, or on the left side of a pipe), and not knowing them could lead to more trouble than a fully manual error handling strategy would.
+
+* In a script meant for internal use on non-sensitive data, it may not be worth the shift of mindset it requires.
+
+Furthermore, there are a few things (edit: a _lot_ of things) to know to avoid mind-boggling issues:
+
+When doing `+((n--))+`, for example, to decrement a variable, the `+((…))+` construct has an exit status of its own.
+This status is a success status _if and only if_ the result of the computation is different than{nbsp}0:
+
+[source, bash]
+----
+  $ ((0)); echo "$?"
+1
+
+  $ ((1)); echo "$?"
+0
+
+  $ ((-1)); echo "$?"
+0
+----
+
+This means that reaching zero while decrementing your variable would cause the script to end if you activated `set -e`!
+To prevent this and be on the safe side, you can do:
+
+[source, bash]
+----
+  $ ((0)) || true; echo "$?"
+0
+----
+
+Basically, `|| true` is an easy way to tell `set -e` that it does not matter if the command right before it fails (`true` will be executed, succeed, and the status of the command chain it formed will be a success status).
+
+Regarding `set -e`’s shortcomings and oddities, you can also read:
+
+* https://web.archive.org/web/20220314040936/http://mywiki.wooledge.org/BashFAQ/105
+
+* https://stackoverflow.com/questions/71619652/difference-of-behavior-between-set-e-source-and-bash-ec-source
+
+
+==== Keeping strange settings local
+
+Every `+set -<something>+` (or `set {plus}++<something>++`, for that matter) using flags other than `-e -x -v` should ideally stand within a subshell to make sure you do not wreak havoc by forcing a significant paradigm shift onto your workmates (or yourself) in a huge script.
+
+Most of the default settings were chosen with good reasons, and sometimes, while it may seem that doing, for example, `set -u` (“Treat unset variables as an error when substituting.”) is a good idea, you may just be breaking ten things while fixing the _one specific_ instruction you’re working on.
+
+[NOTE]
+====
+There is a certain degree of tolerance regarding `set -e`, as it has been widely spread in the company, but as explained in the previous section, it is tricky to use, so keep it local (or avoid using it altogether) if you can.
+====
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash, subs = "+attributes"]
+----
+set -evxu -o pipefail -o noclobber
+# […] lots of stuff
+foo {vbar} bar "$mandatory" > out.log
+----
+|
+[source, bash, subs = "+attributes"]
+----
+set -evx
+# […] lots of stuff
+(
+    set -u -o pipefail -o noclobber
+    foo {vbar} bar "$mandatory" > out.log
+)
+----
+|===
+
+[NOTE]
+====
+The same goes for changes brought to sensitive variables – typically `IFS`, which is used for word-splitting and to join array items when using `+[*]+`.
+
+[source, bash]
+----
+t=(foo bar)
+(
+    IFS=','
+    printf 'Joined with commas: %s\n' "${t[*]}"
+)
+----
+
+⇒ `Joined with commas: foo,bar`
+====
+
+
+=== Backticks
+
+The `foo={backtick}echo plop{backtick}` syntax is deprecated and can lead to all kinds of trouble when attempting to nest things.
+It has no advantage whatsoever (beside the slightly lower character count) over `$(…)`.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash, subs = "+attributes"]
+----
+foo=`bar plop`
+yo "`pa la la`" hey
+----
+|
+[source, bash, subs = "+attributes"]
+----
+foo=$(bar plop)
+yo "$(pa la la)" hey
+----
+|===
+
+
+=== Loss of values when exiting a loop
+
+Pipes spawn subshells to execute what’s on they right-hand side.
+A common consequence of that, which can lead to much headache, is that changes brought to variables get reverted when exiting some loops:
+
+.This will yield 0, not 1+2+3=6
+====
+[source, bash]
+----
+n=0
+seq 3 | while read k
+do
+    ((n += k))
+done
+printf '%d\n' "$n"
+----
+====
+
+Solutions include:
+
+. Using “process substitution”:
++
+[source, bash]
+----
+n=0
+while read k
+do
+    ((n += k))
+done < <(
+    seq 3
+)
+printf '%d\n' "$n"
+----
+
+. Using a “here string”:
++
+[source, bash]
+----
+data=$(seq 3)
+n=0
+while read k
+do
+    ((n += k))
+done <<< "$data"
+printf '%d\n' "$n"
+----
+
+[TIP]
+====
+See `man bash` for more on those concepts.
+====
+
+
+=== Make local variables actually local
+
+By default, when you write `foo=bar`, you create a _global_ `foo` variable.
+While this may at first seem convenient, this can lead to strange and annoying bugs or false positives, like a function working correctly (only for a while…) despite not actually using the arguments passed to it, picking global variables instead without you being conscious of it.
+
+A good habit is to mark as `local` every variable meant to be used solely within the function that declares them:
+
+[source, bash]
+----
+my_sub_function() {
+    printf 'In sub-function: %s\n' "$foo"
+}
+
+my_function() {
+    local foo=notplop
+    printf 'In function: %s\n' "$foo"
+    
+    my_sub_function
+}
+
+foo=plop
+my_function
+printf 'After function call: %s\n' "$foo"
+----
+
+This yields:
+
+[source]
+----
+In function: notplop
+In sub-function: notplop
+After function call: plop
+----
+
+The variable bubbled down to `my_sub_function`, but did not interfere with the global `foo` variable used outside of those functions.
+
+As a bonus, `local` guarantees that the variables are empty upon declaration.
+No need for weird `unset -v`, `foo=''` or whatever.
+
+
+=== `echo` vs. `printf`
+
+The options and escape sequences interpreted by `echo` depends heavily on the considered platform, which `printf` is much more standardized.
+
+To quote https://pubs.opengroup.org/onlinepubs/9699919799/utilities/echo.html#tag_20_37_16[the Open Group]:
+
+> It is not possible to use `echo` portably across all POSIX systems unless both `-n` (as the first argument) and escape sequences are omitted.
+
+At Yseop, we once had a release note that was heavily truncated because the system that ran the release note-generating script was interpreting, in `echo`, by default, the `+\c+` sequence, which means “suppress further output” and happened to appear in YML snippets as the beginning of commands like `+\command+`.
+
+.OK
+* [x] `echo 'foo bar' plop` (No option, hardcoded parameters.)
+
+* [x] `echo` (No argument, just printing a newline.)
+
+.Not OK
+* [ ] `echo "$plop"`
+(Dynamic content, safer to use `printf '%s\n' "$plop"`.)
+
+* [ ] `echo "Plop: $plop"`
+(Idem, and would benefit from a clear formatting string; safer to use `printf 'Plop: %s\n' "$plop"`.)
+
+
+=== (Not) parsing `ls`’s output
+
+`ls` is for humans and is far too unreliable.
+Machines prefer `find`, `stat`, or globbing patterns like `foo/*`.
+(This topic is heavily covered on the web.)
+
+
+== Overkill
+
+Things that can be done in more concise or clear ways.
+
+
+[[quotes_in_assignments]]
+=== Quotes in assignments
+
+Quotes are not needed on the right-hand side of assignments, unless you have hardcoded spaces or Bash metacharacters (`| & ;`, etc.) there.
+In some editors, syntax highlighting may even be better without those quotes.
+
+[source, bash]
+----
+print_stuff_with_spaces() {
+    echo abc
+    echo
+    echo d e f
+}
+
+var_with_spaces=$'a \t b \n c'
+
+mix=foo${var_with_spaces}bar$(
+    print_stuff_with_spaces
+)plop
+
+printf 'mix = [%q]\n' "$mix"
+----
+
+This yields (as expected):
+
+[source]
+----
+mix = [$'fooa \t b \n cbarabc\n\nd e fplop']
+----
+
+The legit uses for quotes in assignments are things like:
+
+[source, bash]
+----
+foo='bar plop'
+#       ↑
+# Hardcoded spaces
+#       ↓
+foo="bar ${yo}"
+
+foo='bar&plop'
+#       ↑
+# Bash metacharacters
+#       ↓
+foo="bar;${yo}"
+----
+
+Of course, when in doubt, it’s better to quote, but:
+
+* `foo='bar/plop'` is definitely overkill;
+
+* keep in mind that in the context of assignments, it is _not_ the presence of variable or command expansions you should be worried about, but the *hardcoded characters* (basically the opposite of what people tend to think).
+
+
+=== Reading input
+
+Many commands can read data by accepting files as parameters, or by getting data on their standard input (which can be made easier via redirections).
+https://web.archive.org/web/20220327013356/https://porkmail.org/era/unix/award#cat[Keep in mind that `cat`’s name stands for “concatenate”], not for “dump this file’s content on stdout because I have a grudge against everything that is not a pipe”.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash, subs = "+attributes"]
+----
+cat "$f" {vbar} grep plop
+cat "$f" {vbar} tr -cd 'a-z'
+printf '%s\n' "$PASSWORD" {vbar} docker login -u me --password-stdin
+----
+|
+[source, bash, subs = "+attributes"]
+----
+grep plop "$f"
+tr -cd 'a-z' < "$f"
+docker login -u me --password-stdin <<< "$PASSWORD"
+----
+|===
+
+
+=== `sed`’s `-e`
+
+This option is https://unix.stackexchange.com/a/387528[virtually _never_ useful].
+It is even generally harmful as far as readability is concerned, since you can, instead of using it, write your `sed` script on multiple lines, possibly even with comments:
+
+[source, bash]
+----
+sed '
+    # Censor.
+    /crap/ d
+
+    # Yell.
+    s/.*/\U&/g
+' "$my_file"
+----
+
+
+== Readability
+
+Make your code easier to understand for others.
+
+
+=== `&&` and `||`
+
+Do not use those as “the lazy coder’s `if-then-else`”.
+These are often misunderstood and misused.
+
+* Real, human-friendly flow-control keywords make the structure of the code more apparent.
+
+* A `foo && bar || plop` chain can actually run both `bar` and `plop` depending on what happens, so it’s _not_ a viable makeshift ternary operator.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash, subs = "+attributes"]
+----
+my_func && grep plop plup {vbar}{vbar} echo omg
+----
+|
+[source, bash]
+----
+if my_func
+then
+    grep plop plup
+else
+    echo omg
+fi
+----
+|===
+
+Legit uses include:
+
+. Situations where the right-hand side consists of nothing but a _very basic statement_ such as:
++
+--
+** `true`,
+** `false`,
+** `continue`,
+** `break`,
+** `return`,
+** `exit`.
+--
++
+[source, bash]
+----
+for file in ./*.txt
+do
+    # Get rid of garbage in case the globbing pattern
+    # matched nothing and came back as-is.
+    [[ -r $file ]] || continue
+    # […] process
+done
+----
+
+. Conditionals:
++
+[source, bash]
+----
+if [[ $foo && ! $bar ]] || [ -f "$path" ]
+then
+    echo plop
+fi
+----
+
+Additionally, note that it is possible to start a new line after `&&` or `||` (you can view those markers as “special kinds of semicolons”, much like the single `&`).
+There is often no good reason not to do so (outside of the “very simple statements” cases mentioned above):
+
+[source, bash]
+----
+create_file foo/bar.txt &&
+grep yo foo/bar.txt &&
+echo 'OK!'
+
+if long_condition_involving_a_function and its args &&
+    another_thing_that_must_succeed and other args
+then
+    echo wow
+fi
+----
+
+
+=== Single vs. double quotes
+
+Double quotes allow expansions such as:
+
+* `+$foo+`
+* `+${foo//a/_}+`
+* `+$(bar)+`
+* `+$((1 + n))+`
+
+Single quotes do not allow this.
+
+Avoid double quotes when you do not need any kind of expansion.
+Using double quotes in irrelevant places is akin to saying to readers: “Hey, look! I do fancy stuff in there! … `[Ten good seconds later]` Just kidding! There’s actually nothing special to see!”
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+txt="Hello there, this is a message."
+printf "%s %s\n" "$txt" "foo bar"
+----
+|
+[source, bash]
+----
+#   ↓                               ↓
+txt='Hello there, this is a message.'
+printf '%s %s\n' "$txt" 'foo bar'
+#      ↑       ↑        ↑       ↑
+----
+|===
+
+[TIP]
+====
+Think of single quotes as a mean of escaping things.
+Well… escaping _more_ things than double quotes do.
+====
+
+
+== Debuggability
+
+Fail fast, or make sure trouble-causing cases are caught.
+
+
+=== Check mandatory parameters
+
+Both in functions or for the script itself, make sure you check early that parameters that ought to be set (and, if relevant, non-empty) are indeed set.
+
+[source, bash]
+----
+file=${1:?No file given.}
+message=${2?No message given.}
+
+printf '%s\n' "$message" > "$file"
+----
+
+* [x] `:?` checks that the variable is set and non-empty, and exits if it is unhappy.
+* [x] `?` is similar, but accepts empty values.
+* [x] A custom message can be written after the `?`, but is optional.
+
+.Idem for functions
+[source, bash]
+----
+my_function() {
+    local file=${1:?No file given.}
+    local message=${2?No message given.}
+
+    printf '%s\n' "$message" > "$file"
+}
+
+my_function "$@"
+----
+
+Just like `set -e`, this can avoid “snowballing” effects and catch issues early.
+
+
+== Tips
+
+=== Boolean impersonations
+
+There are no real booleans in Bash.
+We mostly have to work with:
+
+* strings that are empty or not;
+* commands (such as `true` and `false`) that exit with a status of success or failure;
+* dumb string comparisons.
+
+An often used approach is to put literally the strings “true” or “false” in variables.
+However, *this has downsides*, and the way to use such variables is *not always clear*:
+
+[source, bash]
+----
+OVERKILL_CONST_TRUE=true
+OVERKILL_CONST_FALSE=false
+
+dirty_true=true
+dirty_false=false
+
+if [[ $dirty_false ]]
+then
+    echo 'Not empty, so the test succeeds!'
+else
+    echo 'Too bad, we won’t get there.'
+fi
+
+if [[ $dirty_false = true ]]
+then
+    echo WOULOULOU
+    exit 1
+else
+    echo 'This is better, but error- and typo-prone.'
+fi
+
+if [[ $dirty_false = $OVERKILL_CONST_TRUE ]]
+then
+    echo WOULOULOU
+    exit 1
+else
+    echo 'Kinda safer, but even with better names it is quite weird.'
+fi
+
+if "$dirty_false"
+then
+    echo WOULOULOU
+    exit 1
+else
+    echo 'It technically works, but do we really want to execute'
+    echo 'random programs if a bug puts garbage in our variable?'
+fi
+----
+
+This yields:
+
+[source]
+----
+Not empty, so the test succeeds!
+This is better, but error- and typo-prone.
+Kinda safer, but even with better names it is quite weird.
+It technically works, but do we really want to execute
+random programs if a bug puts nonsense in our variable?
+----
+
+It is often *simpler and therefore recommended to use the “empty or not” paradigm*, conjointly with the default operator of `{startsb} / {startsb}{startsb} / test` (negated with `-z` or `!`):
+
+[source, bash]
+----
+this_one_is_true=1
+this_one_is_true_as_well=PLOP
+
+this_one_is_false=''
+unset -v this_one_is_false_as_well
+
+if [[ $this_one_is_true && $this_one_is_true_as_well &&
+    ! $this_one_is_false && -z $this_one_is_false_as_well ]]
+then
+    echo OK
+else
+    echo Bug
+fi
+----
+
+[NOTE]
+====
+It is also technically possible to define (and re-define if needed) functions instead of basic variables, and then ditch `{startsb} / {startsb}{startsb} / test` entirely, but that may look weird to some:
+
+[source, bash]
+----
+this_one_is_true() { true; }
+this_one_is_true_as_well() { return 0; }
+
+this_one_is_false() { false; }
+this_one_is_false_as_well() { return 1; }
+
+if this_one_is_true && this_one_is_true_as_well &&
+    ! this_one_is_false && ! this_one_is_false_as_well
+then
+    echo OK
+else
+    echo Bug
+fi
+----
+====
+
+
+=== Sets
+
+Sets in programming are basically bags which contain some objects (and, conversely, that do not contain any other object), with generally no notion of order whatsoever.
+
+A nice way to obtain this in Bash is to use an associative array with values that do not really matter.
+The keys tell you which items are in the set.
+
+[source, bash]
+----
+declare -A my_set
+
+for a in foo bar
+do
+    for b in plop yo
+    do
+        my_set[${a}_${b}]=1
+    done
+done
+
+if [[ ${my_set['foo_plop']} ]]
+then
+    echo foo_plop in it
+fi
+
+if [[ ! ${my_set['foo_bar']} ]]
+then
+    echo foo_bar NOT in it
+fi
+
+printf 'All items:'
+# “!” before name to get keys.
+printf ' %q' "${!my_set[@]}"
+echo
+----
+
+This yields:
+
+[source]
+----
+foo_plop in it
+foo_bar NOT in it
+All items: foo_yo bar_yo foo_plop bar_plop
+----
+
+[NOTE]
+====
+Generally speaking, if you’re considering to type “find item in array in bash” in a search engine, it means that you should have used an associative array instead of (or in addition to) an indexed array.
+====
+
+
+=== Passing arrays to functions
+
+==== Break it down into pieces
+
+The naive approach, which is mostly for indexed arrays, is to individually pass all the items to the function:
+
+[source, bash]
+----
+foo() {
+    printf '[%s]' "$@"
+    echo
+}
+
+bar() {
+    local t=(first "$@")
+    t+=(last)
+    foo "${t[@]}"
+}
+
+initial=(
+    yo
+    yeah
+)
+
+bar "${initial[@]}"
+----
+
+This yields:
+
+[source]
+----
+[first][yo][yeah][last]
+----
+
+This is quite convenient for simple cases, but things get hairy quite quickly if you need multiple arrays or if the function also have other parameters.
+You may then need to:
+
+* take the size of each array as extra parameters to know where they end;
+
+* use notations like `"${@:2:2}"` to “skip `$1` and then take only two parameters from there”.
+
+Furthermore, associative arrays are much harder to pass like this: you would need to provide the keys and values separately and perform arithmetical operations to know which function argument is the value for which other argument.
+
+Fortunately, there are other ways to do that, as we’ll see in the following sections.
+
+
+==== Quick and dirty: use the array as a global variable
+
+(Basically, do not declare it with `local`).
+At least document the function, though, to explain that it expects a variable named _XXX_ of type _YYY_ to be initialized and to contain stuff that means _ZZZ_:
+
+[source, bash]
+----
+# Expects a global “global_indexed_array” indexed array to
+# be defined and to contain at least two example words.
+plop() {
+    printf '%s\n' "${global_indexed_array[1]}"
+}
+
+declare -A global_associative_array=([foo]=bar)
+declare -Ag more_explicitly_global_associative_array=([foo]=bar)
+
+global_indexed_array=(foo bar)
+declare -g more_explicitly_global_indexed_array=(foo bar)
+declare -ag more_explicitly_global_more_explicitly_indexed_array=(foo bar)
+
+plop
+----
+
+This yields `bar`.
+
+[TIP]
+====
+When a global variable is especially important and gets manipulated by lots of functions, it can be worth marking it as special by prefixing its name with an underscore, for example: `_global_metadata`, `_config`, etc.
+====
+
+
+[[pass_by_name]]
+==== Pass it by name
+
+`local` (and `declare`) support a `-n` flag:
+
+> make NAME a reference to the variable named by its value
+
+[source, bash]
+----
+# $1    Name of string variable to print with the “A” prefix.
+# $2    Name of indexed array to print with the “B” prefix.
+# $3    Name of associative array to print with the “C” prefix.
+foo() {
+    local -n str=$1
+    local -n index=$2
+    local -n assoc=$3
+    
+    printf 'A %s=%q\n' "$1" "$str"
+    
+    printf 'B %s=[' "$2"
+    printf ' %q' "${index[@]}"
+    echo ' ]'
+    
+    printf 'C %s (Keys)=[' "$3"
+    printf ' %q' "${!assoc[@]}"
+    echo ' ]'
+    
+    printf 'C %s (Vals)=[' "$3"
+    printf ' %q' "${assoc[@]}"
+    echo ' ]'
+}
+
+# Declare stuff.
+x=plop
+y=(yo yeah)
+declare -A z=([tulip]=potato [tart]=pie)
+
+# Provide the NAMES to the function.
+foo x y z
+----
+
+This yields:
+
+[source]
+----
+A x=plop
+B y=[ yo yeah ]
+C z (Keys)=[ tart tulip ]
+C z (Vals)=[ pie potato ]
+----
+
+Those references are not just to read: they *can be used to modify* the targeted variable from within the function, and *the changes will be kept*.
+
+[CAUTION]
+====
+An error will occur if the variable used as a reference has the same name as the one it is referencing (`local -n foo=foo`).
+
+To make this very unlikely, you can use one (or both) of the following strategies:
+
+* [x] Add a condition to *skip the declaration* altogether if the names are equal:
++
+[source, bash]
+----
+if [[ $1 != ref ]]
+then
+    local -n ref=$1
+fi
+----
+
+* [x] Give an *ugly name* via a double-underscore prefix to your local variable:
++
+[source, bash]
+----
+local -n __ref=$1
+----
+====
+
+
+=== Saving variables for later
+
+If you need to store the values of variables for later (possibly even for another execution of the script, or for another script altogether), you can use `declare -p`:
+
+> display the attributes and value of each NAME
+
+This does not sound like much, but…
+
+[source, bash]
+----
+username='Foo Bar'
+password='tom@to>te$t'
+
+config=(
+    -e 'yo yeah'
+    --plop
+    omg
+)
+
+declare -p username password config > save.sh
+----
+
+.Content of `save.sh` after execution
+[source, bash]
+----
+declare -- username="Foo Bar"
+declare -- password="tom@to>te\$t"
+declare -a config=([0]="-e" [1]="yo yeah" [2]="--plop" [3]="omg")
+----
+
+This prints *perfectly valid and robust commands* that can be run to *declare clones* of the given variables, and this works for *any kind of variable*, even associative arrays.
+
+[TIP]
+====
+*Functions* can also be processed this way if you add the `-f` flag.
+====
+
+Once your saved definition file is created, you can load the values by sourcing that file with `.`:
+
+[source, bash]
+----
+printf 'Before: Username: %s\n' "${username:-Empty}"
+printf 'Before: Password: %s\n' "${password:-Empty}"
+printf 'Before: Config:   %s\n' "${config[*]:-Empty}"
+
+. save.sh
+
+printf 'After:  Username: %s\n' "${username:-Empty}"
+printf 'After:  Password: %s\n' "${password:-Empty}"
+printf 'After:  Config:   %s\n' "${config[*]:-Empty}"
+----
+
+This yields:
+
+[source]
+----
+Before: Username: Empty
+Before: Password: Empty
+Before: Config:   Empty
+After:  Username: Foo Bar
+After:  Password: tom@to>te$t
+After:  Config:   -e yo yeah --plop omg
+----
+
+
+=== `{startsb}` and `{startsb}{startsb}`
+
+There are a couple of differences between those.
+This has been extensively covered on the web: +
+https://stackoverflow.com/questions/3427872/whats-the-difference-between-and-in-bash
+
+Here are two things to take away, though:
+
+* `{startsb}{startsb}` is a *keyword* of the Bash language.
+This gives it more control over how its arguments are expanded.
+As a consequence, `{quot}`-s are not needed within it unless you have hardcoded spaces, <<quotes_in_assignments, much like on the right-hand side of assignments>>:
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+[[ "${foo}/plop" = "$(bar)" ]]
+----
+|
+[source, bash]
+----
+[[ ${foo}/plop = $(bar) ]]
+----
+|===
++
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+[ ${foo}/plop = $(bar) ]
+----
+|
+[source, bash]
+----
+[ "${foo}/plop" = "$(bar)" ]
+----
+|===
+
+* The arithmetic operators of `{startsb}{startsb}`, namely:
++
+--
+** `-eq`
+** `-ne`
+** `-lt`
+** `-le`
+** `-gt`
+** `-ge`
+--
++
+… are open to code injection:
++
+[source, bash]
+----
+  $ x='a[$(date)]'; [[ $x -eq 1 ]]
+bash: ven. 25 mars 2022 18:27:42 CET: syntax error: invalid arithmetic operator (error token is ". 25 mars 2022 18:27:42 CET")
+----
++
+Solutions include:
+
+** Using `{startsb}` for those operators.
+** Sanitizing data that may be provided by an external entity and that should be an integer:
+*** `x=${x//[!0-9-]/}`
+*** `x=$(tr -cd 0-9- <<< "$x")` (same result)
+** Not using externally provided data at all.
+** For basic comparisons, using the string-based operators instead:
+*** `=`
+*** `!=`
+** Relying on a program like `bc` or even `python` for arithmetics.
+
+
+== Unit tests
+
+It is fairly easy to test functions without resorting to overkill third-party frameworks, and this can make development a lot easier.
+
+
+=== Clean up your codebase
+
+Let’s consider this script, standing alone at the root of a project:
+
+.`main-script.sh`
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# Read JSON on the standard input, and print it
+# back on the standard output, after having set
+# the value of the “foo” property to a new given
+# value if and only if there was a “foo” property
+# in the input to begin with.
+#
+# $1    New value for “foo”.
+change_stuff_if_set() {
+    local data
+    # Grab and save standard input.
+    data=$(cat)
+    
+    # See if there is a “foo” property.
+    local foo
+    if ! foo=$(jq '.foo // empty' <<< "$data")
+    then
+        # Give up if jq is not happy at all.
+        echo 'Error: Could not parse JSON.'
+        return 1
+    fi
+    
+    if [[ $foo ]]
+    then
+        # Change the value of “foo”.
+        data=$(jq --arg x "$1" '.foo = $x' <<< "$data")
+    fi
+    
+    # Give back the (possibly modified) data.
+    printf '%s\n' "$data"
+}
+
+change_stuff_if_set palala << '_JSON_'
+{
+    "foo": "bar",
+    "plop": 12
+}
+_JSON_
+----
+
+To make testing easier, we’ll split that file in two:
+
+. a functions-dedicated file;
+. the main file, the one to be called by users.
+
+.`main-script.sh`
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# Take note of where this script stands.
+BASEDIR=$(cd "$(dirname "$0")" && pwd -P)
+readonly BASEDIR
+
+# Load (“source”) the functions.
+. "$BASEDIR"/functions.sh
+
+change_stuff_if_set palala << '_JSON_'
+{
+    "foo": "bar",
+    "plop": 12
+}
+_JSON_
+----
+
+.`functions.sh`
+[source, bash]
+----
+# Read JSON on the standard input, and print it
+# back on the standard output, after having set
+# the value of the “foo” property to a new given
+# value if and only if there was a “foo” property
+# in the input to begin with.
+#
+# $1    New value for “foo”.
+change_stuff_if_set() {
+    local data
+    # Grab and save standard input.
+    data=$(cat)
+    
+    # See if there is a “foo” property.
+    local foo
+    if ! foo=$(jq '.foo // empty' <<< "$data")
+    then
+        # Give up if jq is not happy at all.
+        echo 'Error: Could not parse JSON.'
+        return 1
+    fi
+    
+    if [[ $foo ]]
+    then
+        # Change the value of “foo”.
+        data=$(jq --arg x "$1" '.foo = $x' <<< "$data")
+    fi
+    
+    # Give back the (possibly modified) data.
+    printf '%s\n' "$data"
+}
+----
+
+[NOTE]
+====
+The functions-dedicated file does not necessarily need a shebang (unless linters complain that they have no idea which shell you’re using), as it is not meant to be *executed* but *sourced*.
+====
+
+
+=== Create your first test file
+
+Add a `test/` directory to your project to keep things organized a little bit.
+Then add a file like this to it:
+
+.`test/change_stuff_if_set.sh`
+[source, bash]
+----
+test "$(
+    change_stuff_if_set yo << '_JSON_'
+{
+    "foo": "bar",
+    "plop": 12
+}
+_JSON_
+)" = '{
+  "foo": "yo",
+  "plop": 12
+}'
+----
+
+On its own, it’s a bit hard to run properly:
+
+* it needs `change_stuff_if_set` to be defined;
+
+* it will not necessarily detect failing assertions.
+
+This is where test runners come into play.
+
+
+=== Create a test runner
+
+This is basically a `run-tests.sh` script that will:
+
+. fetch files from `test/`;
+. load their content while making sure the required functions are defined;
+. tell you if a commands (typically a `test` call) fails within one of the test files.
+
+A minimalist approach would look like this:
+
+.`run-tests.sh`
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# Print what’s happening and stop if something fails.
+set -ex
+
+BASEDIR=$(cd "$(dirname "$0")" && pwd -P)
+readonly BASEDIR
+
+# Load this once and for all.
+. "$BASEDIR"/functions.sh
+
+# Find, print, loop through files.
+# Could be done without the null-separated thingies
+# (i.e., “find … -type f | while read -r path”)
+# but it’s more robust this way.
+find "$BASEDIR"/test/ -type f -print0 | while read -rd '' path
+do
+    # Load a test file.
+    . "$path"
+done
+
+# If we reach this, it means that all tests passed.
+echo 'OK!'
+----
+
+Then just run `./run-tests.sh` and you’ll get your results.
+
+A more fancy test runner can be created like this:
+
+.`run-tests.sh`
+[source, bash]
+----
+#! /usr/bin/env bash
+
+set -e
+
+BASEDIR=$(cd "$(dirname "$0")" && pwd -P)
+readonly BASEDIR
+export BASEDIR
+
+# If needed, create a sandbox for tests that fiddle with files.
+#TEST_TMP=$(mktemp -d "${TMPDIR:-/tmp}"/bash-tests-XXXXXXXX)
+#readonly TEST_TMP
+#export TEST_TMP
+
+# Keep track of which files caused issues.
+unset -v failure_paths
+failure_paths=()
+
+# Count all test files.
+declare -i nb=0
+while read -rd '' path
+do
+    # Padded relative path to test file.
+    printf '%-65s' "$(printf '%q... ' "${path#${BASEDIR}/test/}")"
+    # Only activate “-x” at the last moment,
+    # and keep the output in your pocket for now.
+    if output=$(
+        bash -exc '
+            # Automatically load functions for each test file.
+            . "$BASEDIR"/functions.sh
+            # Load the test file.
+            . "$0"
+        ' "$path" 2>&1
+    )
+    then
+        echo '[OK]'
+    else
+        echo '[Failure]'
+        # Display the whole “set -x”-generated blurb (as well as
+        # whatever the test script may have printed) to help
+        # fix the error.
+        printf '%s\n' "$output"
+        # Take a note of the file that caused the failure.
+        failure_paths+=("$path")
+    fi
+    
+    # […]
+    # When using a temporary directory, you can empty it here
+    # if you want it to be clean before each test file execution.
+    
+    ((nb++)) || true
+done < <(
+    # If specific test files were given as arguments,
+    # run only those instead of fetching all test files.
+    if [[ $# -gt 0 ]]
+    then
+        printf '%s\0' "$@"
+    else
+        find "$BASEDIR"/test/ -type f -print0
+    fi
+)
+
+# Display a summary.
+if [[ ${#failure_paths[@]} -eq 0 ]]
+then
+    printf 'All clear. (%d files)\n' "$nb"
+    exit 0
+else
+    echo
+    echo 'Failures:'
+    echo
+    printf '  - %q\n' "${failure_paths[@]}"
+    echo
+    exit 1
+fi
+----
+
+The result looks like this:
+
+image:run-tests.gif[Test run animation]
+
+
+=== Improve your test files
+
+Now that our test files are set, via `set / bash -e`, to halt upon error statuses, we can add lots of assertion-like instructions to them:
+
+.`test/change_stuff_if_set.sh`
+[source, bash]
+----
+# Check that the function returns with a success status:
+change_stuff_if_set yo <<< '{}'
+
+# Check output:
+test "$(change_stuff_if_set yo <<< '{}')" = '{}'
+
+# Check output for multiple input values (each with
+# a corresponding “expected” value):
+# (Using “>” as a custom word-splitting character.)
+while IFS=$'>\n' read -r input expected
+do
+    # Use jq’s compacting feature to make
+    # the JSON comparison formatting-agnostic.
+    test $(
+        # Actual:
+        change_stuff_if_set yo <<< "$input" | jq -c
+    ) = $(
+        # Expected:
+        jq -c <<< "$expected"
+    )
+done << '_INPUT_AND_EXPECTED_'
+{}>{}
+{ "plop": "yeah" }>{ "plop": "yeah" }
+{ "foo": "yeah" }>{ "foo": "yo" }
+_INPUT_AND_EXPECTED_
+
+# Check that the function returns with a failure status:
+! change_stuff_if_set yo <<< 'not-valid-JSON'
+
+# Comment-like no-op that will be printed exactly once by “set -x”
+# (while an “echo” would make the message appear twice,
+# and a “normal” Bash comment would not appear at all).
+: This explains the next assertion
+
+
+for_demo_purposes() {
+    exit 1
+}
+
+# Check that a function *exits* from its current shell
+# (not just “returns”) with a failure status:
+! (for_demo_purposes; exit 0)
+----
+
+[TIP]
+====
+If you do not feel confident enough with the big bad `set -e`, you can always do explicit things like:
+
+[source, bash]
+----
+if [[ $actual != $expected ]]
+then
+    exit 1
+fi
+----
+====
+
+
+=== Mock annoying commands
+
+==== Rationale
+
+Sometimes during tests, it is not desirable to actually execute some commands, typically those that send HTTP requests:
+
+.`functions.sh`
+[source, bash]
+----
+# $1    Directory name.
+get_file() {
+    curl -L "https://yseop.com/${1:?}/file.json"
+}
+----
+
+In such cases, it is possible to *define a function* with the same name as the command we want to avoid executing.
+The function will take precedence and overshadow the command.
+
+.`my-tests.sh`
+[source, bash]
+----
+curl() {
+    # No-op for now.
+    :
+}
+
+# Check that the function does not crash.
+if ! get_file foo
+then
+    echo Test failed
+    exit 1
+fi
+----
+
+Building on that, you can mock the *output* of the command:
+
+[source, bash]
+----
+curl() {
+    echo '{ "status": "ok" }'
+}
+
+if [[ $(get_file foo) != '{ "status": "ok" }' ]]
+then
+    echo Test failed
+    exit 1
+fi
+----
+
+[NOTE]
+====
+Sometimes, one function calls another Bash script, thus spawning a subprocess.
+In such cases, you may need to export your mock via `export -f my_mock` in your test so that the final Bash script uses your mock instead of the real command.
+====
+
+
+==== Argument checks
+
+It is generally a good idea to check that the mock was called with the *expected arguments*:
+
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/foo/file.json ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+If *multiple calls*, with different parameters or expected output, have to be made to the mock, you can:
+
+. Define the function over and over again (cumbersome but straightforward):
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/foo/file.json ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = https://yseop.com/bar/file.json ]]
+    then
+        echo '{ "fruit": "apricot" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+. Use a single definition with more possibilities:
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L ]]
+    then
+        case "$2" in
+            https://yseop.com/foo/file.json)
+                echo '{ "status": "ok" }'
+                ;;
+            
+            https://yseop.com/bar/file.json)
+                echo '{ "fruit": "apricot" }'
+                ;;
+            
+            *)
+                echo Test failed
+                exit 1
+                ;;
+        esac
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+. Use global variables for the expected parameters and / or for the output:
++
+[source, bash]
+----
+curl() {
+    if [[ $# -eq 2 && $1 = -L && $2 = ${_expected_curl_arg_2?} ]]
+    then
+        printf '%s\n' "${_mocked_curl_output?}"
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+_expected_curl_arg_2=https://yseop.com/foo/file.json
+_mocked_curl_output='{ "status": "ok" }'
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+
+_expected_curl_arg_2=https://yseop.com/bar/file.json
+_mocked_curl_output='{ "fruit": "apricot" }'
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+----
+
+
+==== Call counter
+
+If *one execution* of the function to be tested generates *multiple distinct calls* to the mock, you can use a global counter to differentiate the calls (or just to check that the number of calls is the expected count).
+The tricky part is that since most of the time commands and functions are called from within subshell environments, the counter’s increment is lost between calls if you just use a variable, and you have to write its value to a temporary file to make it _really_ shared:
+
+[source, bash]
+----
+echo 0 > "$TEST_TMP"/calls
+
+curl() {
+    # Get
+    local nb_calls=$(cat "$TEST_TMP"/calls)
+    # Increment
+    ((nb_calls++)) || true
+    # Save
+    printf '%d\n' "$nb_calls" > "$TEST_TMP"/calls
+    
+    if [[ $# -eq 2 && $1 = -L ]]
+    then
+        if [[ $nb_calls -eq 1 && $2 = https://yseop.com/foo/file.json ]]
+        then
+            echo '{ "status": "ok" }'
+        elif [[ $nb_calls -eq 2 && $2 = https://yseop.com/bar/file.json ]]
+        then
+            echo '{ "fruit": "apricot" }'
+        else
+            echo Test failed
+            exit 1
+        fi
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+[[ $(get_file bar) = '{ "fruit": "apricot" }' ]]
+# Check total number of calls to the mock.
+[[ $(cat "$TEST_TMP"/calls) -eq 2 ]]
+----
+
+[TIP]
+====
+This counter trick is also useful to make sure some operations are performed in the expected order.
+====
+
+
+==== Tips for high argument counts
+
+If the number of “expected arguments” to check is too high, there are several ways to simplify the process (often at the cost of robustness, though):
+
+.Dirty check with possible false positives if some arguments contain spaces
+[source, bash]
+----
+curl() {
+    if [[ $* = '-L https://yseop.com/foo/file.json' ]]
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+.Dirty check with possible false positives if some arguments contain a character that, at least, we can choose
+[source, bash]
+----
+curl() {
+    if (
+        IFS='|'
+        [[ $* = '-L|https://yseop.com/foo/file.json' ]]
+    )
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+----
+
+.Check with possible false positives if some arguments contain a newline; version with global expectation array variable
+[source, bash]
+----
+curl() {
+    if (
+        IFS=$'\n'
+        [[ $* = ${_expected[*]} ]]
+    )
+    then
+        echo '{ "status": "ok" }'
+    else
+        echo Test failed
+        exit 1
+    fi
+}
+
+_expected=(
+    -L
+    https://yseop.com/foo/file.json
+)
+[[ $(get_file foo) = '{ "status": "ok" }' ]]
+----
+
+
+=== Running Bash tests via Jenkins
+
+To automatically run the Bash unit tests during the project’s build, you can add a dedicated stage (possibly in parallel to some other tests):
+
+.`Jenkinsfile`
+[source, groovy]
+----
+pipeline {
+    // […]
+    stages {
+        // […]
+        stage('Script tests') {
+            steps {
+                sh('./path/to/run-tests.sh')
+            }
+        }
+        // […]
+    }
+}
+----
+
+[CAUTION]
+====
+Make sure `run-tests.sh` is executable (`chmod u+x`).
+====
+
+
+== Further reading and watching
+
+* https://drive.google.com/file/d/1oSxE6qZXBAzRKEaVJnXdufy7jYvGaYf4/view?usp=sharing[Internal technical presentation (French).]
+
+* `man bash` (`/` to search, `n` and `N` for next and previous occurrences).
+
+* https://google.github.io/styleguide/shellguide.html[The Google guide]. Their conventions are not 100% aligned with ours of course, but this contains useful tips, like the need to split `local foo=$(bar)` into two statements, etc.

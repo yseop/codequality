@@ -1,3 +1,7 @@
 = codequality
 
-Please see the readme link:java/README.adoc[java/README.adoc]
+Please see the per-language ReadMe files:
+
+[horizontal]
+&#9749; Java:: link:java/README.adoc[]
+&#9881; Bash:: link:bash/README.adoc[]
