@@ -110,9 +110,16 @@ You can now reorganize your imports by using kbd:[Ctrl + Shift + O], or by just 
 
 == IntelliJ
 
-NOTE: In IntelliJ, a plugin configuration is for current project only.
-Therefore, you'll need to configure each project you're working on.
-Consider creating a dedicated profile (with a name like “Yseop”) in the formatter’s settings to be able to reconfigure it faster.
+[NOTE]
+====
+In IntelliJ, a plugin configuration is for the current project only.
+Therefore, by default, you'll need to configure each project you're working on.
+Fortunately, you can save time with those two steps:
+
+* [x] Create a dedicated profile (with a name like “Yseop”) in the formatter’s settings instead of keeping it to “`<Project Specific>`”.
+
+* [x] Set formatter settings and save actions in menu:File[New Projects Setup > Settings for new projects…] so that each newly imported project will immediately use the right settings.
+====
 
 
 === Code formatter
