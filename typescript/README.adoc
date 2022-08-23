@@ -1,0 +1,51 @@
+= Yseop code style documentation
+
+:experimental:
+:toc:
+:toclevels: 3
+
+This document's goal is to help configure a TypeScript environment.
+
+== VSCode
+
+A default `settings.json` file is available here: link:vscode/settings.json[`vscode/settings.json`].
+It is correctly configured to use ESLint.
+
+
+=== Useful extensions
+
+A huge amount of extensions exists on the Marketplace and the following could useful for you:
+
+`SonarLint`::
+    IDE extension that helps you detect and fix quality issues as you write code in JavaScript, TypeScript, Python and PHP.
+
+
+=== Extensions configuration
+
+In Visual Studio Code, settings can be saved on a `local` scope or in the `workspace` (`.vscode/` folder, shared via Git).
+
+
+==== SonarLint specific configuration
+
+If you want to use the SonarLint extension, first, you need to generate an access token on SonarCloud (https://sonarcloud.io/account/security/).
+It's used by SonarLint in order to fetch the configuration used on the project. +
+Now you will have to update your `User Settings`:
+
+. Open the "Command Palette" using kbd:[Ctrl+Shift+P]
+. Search `Preferences: Open Settings (JSON)`
+. Press kbd:[Enter]
+. Add the following configuration and save:
++
+[source, json]
+----
+"sonarlint.ls.javaHome": "/usr/lib/jvm/java", <1>
+"sonarlint.connectedMode.servers": [
+    {
+        "serverId": "sonarcloud.io",
+        "serverUrl": "https://sonarcloud.io",
+        "organizationKey": "yseop",
+        "token": "xxx"
+    }
+]
+---
+<1> The location of your Java home
