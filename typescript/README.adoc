@@ -31,12 +31,13 @@ If you want to use the SonarLint extension, first, you need to generate an acces
 It's used by SonarLint in order to fetch the configuration used on the project. +
 Now you will have to update your `User Settings`:
 
-* Open the `Command Palette` using kbd:[CTRL+SHIFT+P]
+* Open the "Command Palette" using kbd:[Ctrl+Shift+P]
 * Search `Preferences: Open Settings (JSON)`
-* Press kbd:[ENTER]
-* Add the following configuration and save
-
-```JSON
+* Press kbd:[Enter]
+* Add the following configuration and save:
++
+[source, json]
+----
 "sonarlint.ls.javaHome": "/usr/lib/jvm/java", <1>
 "sonarlint.connectedMode.servers": [
     {
@@ -46,5 +47,5 @@ Now you will have to update your `User Settings`:
         "token": "xxx"
     }
 ]
-```
+---
 <1> The location of your Java home
