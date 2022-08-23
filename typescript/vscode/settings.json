@@ -1,0 +1,27 @@
+{
+    "prettier.configPath": ".prettierrc.json",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "eslint.alwaysShowStatus": true,
+    "eslint.format.enable": true,
+    "eslint.lintTask.enable": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "eslint.validate": ["javascript"],
+    "eslint.probe": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "html",
+      "vue",
+      "markdown",
+      "scss"
+    ],
+    "terminal.integrated.scrollback": 10000,
+    "eslint.workingDirectories": [],
+    "eslint.migration.2_x": "off",
+    "editor.formatOnSave": true,
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true
+  }
+  
