@@ -6,7 +6,7 @@
     "eslint.lintTask.enable": true,
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": true
-    },
+     },
     "eslint.validate": ["javascript"],
     "eslint.probe": [
       "javascript",
@@ -18,10 +18,8 @@
       "markdown",
       "scss"
     ],
-    "terminal.integrated.scrollback": 10000,
     "eslint.workingDirectories": [],
     "eslint.migration.2_x": "off",
     "editor.formatOnSave": true,
     "typescript.tsserver.experimental.enableProjectDiagnostics": true
-  }
-  
+}
