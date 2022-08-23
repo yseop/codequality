@@ -1,7 +1,7 @@
 = Yseop Bash guidelines and tips
 :toc:
 :toclevels: 3
-:imagesdir: readme-images
+:imagesdir: readme-img
 
 :do_not:  &#x1F44E; Do not write this
 :instead: &#x1F44D; Write this instead
