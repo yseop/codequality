@@ -31,10 +31,10 @@ If you want to use the SonarLint extension, first, you need to generate an acces
 It's used by SonarLint in order to fetch the configuration used on the project. +
 Now you will have to update your `User Settings`:
 
-* Open the "Command Palette" using kbd:[Ctrl+Shift+P]
-* Search `Preferences: Open Settings (JSON)`
-* Press kbd:[Enter]
-* Add the following configuration and save:
+. Open the "Command Palette" using kbd:[Ctrl+Shift+P]
+. Search `Preferences: Open Settings (JSON)`
+. Press kbd:[Enter]
+. Add the following configuration and save:
 +
 [source, json]
 ----
