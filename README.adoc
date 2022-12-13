@@ -6,3 +6,4 @@ Please see the per-language ReadMe files:
 &#9749; Java:: link:java/README.adoc[]
 &#9881; Bash:: link:bash/README.adoc[]
 &#127760; TypeScript:: link:typescript/README.adoc[]
+&#x1F4C4; AsciiDoc:: https://github.com/yseop/yseop-doc/blob/master/YSEOP_WRITER_GUIDE.adoc[`yseop-doc` → Guide]
