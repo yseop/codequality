@@ -1321,7 +1321,9 @@ Here are two things to take away, though:
 
 * `{startsb}{startsb}` is a *keyword* of the Bash language.
 This gives it more control over how its arguments are expanded.
-As a consequence, `{quot}`-s are not needed within it unless you have hardcoded spaces, <<quotes_in_assignments, much like on the right-hand side of assignments>>:
+As a consequence, `{quot}`-s are not needed within it unless you have hardcoded spaces, <<quotes_in_assignments, much like on the right-hand side of assignments>>.
+However, you should generally quote the right-hand side of `=` and `!=` tests, otherwise https://github.com/koalaman/shellcheck/wiki/SC2053[it gets treated like a globbing pattern].
+All in all:
 +
 [cols = "2*a", options = header]
 |===
@@ -1336,7 +1338,7 @@ As a consequence, `{quot}`-s are not needed within it unless you have hardcoded 
 |
 [source, bash]
 ----
-[[ ${foo}/plop = $(bar) ]]
+[[ ${foo}/plop = "$(bar)" ]]
 ----
 |===
 +
