@@ -2023,6 +2023,35 @@ Make sure `run-tests.sh` is executable (`chmod u+x`).
 ====
 
 
+== Useful functions and snippets
+
+=== Curl with status, AKA “fail with body”
+
+While using curl might seem simple, it’s often hard to get the correct behavior when juggling with options like `--fail`, `--silent` and `--show-error`: you can end up with…
+
+* the shell script not caring about an HTTP error (due to `curl` exiting with a misleading status), or
+* `curl` not printing anything in case of failures:
+** not telling you what the body was,
+** nor what HTTP status it got.
+
+Consider using the function of the following GitHub gist to make logs more developer-friendly: +
+https://gist.github.com/mminot-yseop/c02003e73c06517a7fd053f08e672018
+
+.Typical usage
+====
+unset -v args
+args=(
+    'https://acp.yseop-cloud.com/api/v1/platforms'
+    --header 'Accept: application/json'
+    --basic
+    --user "${ACP_USR:?}:${ACP_PSW:?}"
+    -sS # = “--silent” + “--show-error”
+)
+
+curl_fail_with_body "${args[@]}"
+====
+
+
 == Further reading and watching
 
 * https://drive.google.com/file/d/1oSxE6qZXBAzRKEaVJnXdufy7jYvGaYf4/view?usp=sharing[Internal technical presentation (French).]
