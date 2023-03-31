@@ -2027,7 +2027,7 @@ Make sure `run-tests.sh` is executable (`chmod u+x`).
 
 === Curl with status, AKA “fail with body”
 
-While using curl might seem simple, it’s often hard to get the correct behavior when juggling with options like `--fail`, `--silent` and `--show-error`: you can end up with…
+While using `curl` might seem simple, it’s often hard to get the correct behavior when juggling with options like `--fail`, `--silent` and `--show-error`: you can end up with…
 
 * the shell script not caring about an HTTP error (due to `curl` exiting with a misleading status), or
 * `curl` not printing anything in case of failures:
@@ -2039,6 +2039,8 @@ https://gist.github.com/mminot-yseop/c02003e73c06517a7fd053f08e672018
 
 .Typical usage
 ====
+[source, bash]
+----
 unset -v args
 args=(
     'https://acp.yseop-cloud.com/api/v1/platforms'
@@ -2049,6 +2051,7 @@ args=(
 )
 
 curl_fail_with_body "${args[@]}"
+----
 ====
 
 
