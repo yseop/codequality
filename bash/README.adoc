@@ -1714,7 +1714,10 @@ for_demo_purposes() {
 
 # Check that a function *exits* from its current shell
 # (not just “returns”) with a failure status:
-! (for_demo_purposes; exit 0)
+if (for_demo_purposes; true)
+then
+    exit 1
+fi
 ----
 
 [TIP]
