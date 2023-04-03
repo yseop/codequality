@@ -179,7 +179,7 @@ done
 ----
 case "$a" in
     a) short;;
-    
+
     *)
         long
         long
@@ -610,7 +610,7 @@ my_sub_function() {
 my_function() {
     local foo=notplop
     printf 'In function: %s\n' "$foo"
-    
+
     my_sub_function
 }
 
@@ -1184,17 +1184,17 @@ foo() {
     local -n str=$1
     local -n index=$2
     local -n assoc=$3
-    
+
     printf 'A %s=%q\n' "$1" "$str"
-    
+
     printf 'B %s=[' "$2"
     printf ' %q' "${index[@]}"
     echo ' ]'
-    
+
     printf 'C %s (Keys)=[' "$3"
     printf ' %q' "${!assoc[@]}"
     echo ' ]'
-    
+
     printf 'C %s (Vals)=[' "$3"
     printf ' %q' "${assoc[@]}"
     echo ' ]'
@@ -1416,7 +1416,7 @@ change_stuff_if_set() {
     local data
     # Grab and save standard input.
     data=$(cat)
-    
+
     # See if there is a “foo” property.
     local foo
     if ! foo=$(jq '.foo // empty' <<< "$data")
@@ -1425,13 +1425,13 @@ change_stuff_if_set() {
         echo 'Error: Could not parse JSON.'
         return 1
     fi
-    
+
     if [[ $foo ]]
     then
         # Change the value of “foo”.
         data=$(jq --arg x "$1" '.foo = $x' <<< "$data")
     fi
-    
+
     # Give back the (possibly modified) data.
     printf '%s\n' "$data"
 }
@@ -1483,7 +1483,7 @@ change_stuff_if_set() {
     local data
     # Grab and save standard input.
     data=$(cat)
-    
+
     # See if there is a “foo” property.
     local foo
     if ! foo=$(jq '.foo // empty' <<< "$data")
@@ -1492,13 +1492,13 @@ change_stuff_if_set() {
         echo 'Error: Could not parse JSON.'
         return 1
     fi
-    
+
     if [[ $foo ]]
     then
         # Change the value of “foo”.
         data=$(jq --arg x "$1" '.foo = $x' <<< "$data")
     fi
-    
+
     # Give back the (possibly modified) data.
     printf '%s\n' "$data"
 }
@@ -1629,11 +1629,11 @@ do
         # Take a note of the file that caused the failure.
         failure_paths+=("$path")
     fi
-    
+
     # […]
     # When using a temporary directory, you can empty it here
     # if you want it to be clean before each test file execution.
-    
+
     ((nb++)) || true
 done < <(
     # If specific test files were given as arguments,
@@ -1849,11 +1849,11 @@ curl() {
             https://yseop.com/foo/file.json)
                 echo '{ "status": "ok" }'
                 ;;
-            
+
             https://yseop.com/bar/file.json)
                 echo '{ "fruit": "apricot" }'
                 ;;
-            
+
             *)
                 echo Test failed
                 exit 1
@@ -1909,7 +1909,7 @@ curl() {
     ((nb_calls++)) || true
     # Save
     printf '%d\n' "$nb_calls" > "$TEST_TMP"/calls
-    
+
     if [[ $# -eq 2 && $1 = -L ]]
     then
         if [[ $nb_calls -eq 1 && $2 = https://yseop.com/foo/file.json ]]
@@ -2037,8 +2037,54 @@ While using `curl` might seem simple, it’s often hard to get the correct behav
 ** not telling you what the body was,
 ** nor what HTTP status it got.
 
-Consider using the function of the following GitHub gist to make logs more developer-friendly: +
-https://gist.github.com/mminot-yseop/c02003e73c06517a7fd053f08e672018
+Consider using the following function to make logs more developer-friendly:
+
+[source, bash]
+----
+# Adaptation of https://superuser.com/a/1641410
+# Waiting for curl v7.76+ to have --fail-with-body…
+#
+# In this version, the body is printed to stdout if status OK,
+# and stderr (only stderr!) if HTTP error.
+# An attempt to pretty-format JSON errors will be made.
+#
+# $@    Extra args for curl.
+curl_fail_with_body() {
+    local OUTPUT_FILE
+    OUTPUT_FILE=$(mktemp)
+
+    local -i HTTP_CODE
+    HTTP_CODE=$(curl --output "$OUTPUT_FILE" --write-out "%{http_code}" "$@")
+
+    local body=$(
+        cat "$OUTPUT_FILE"
+    )
+    rm "$OUTPUT_FILE"
+
+    if (($HTTP_CODE < 200 || $HTTP_CODE > 299))
+    then
+        # Printing to stderr dodges the $( … )-s, thus allowing
+        # the user to actually see what went wrong.
+        printf 'HTTP CODE = %s\n' "$HTTP_CODE" >&2
+        if [[ $body ]]
+        then
+            # Print as human-friendly JSON if possible, otherwise raw.
+            local body_for_humans
+            if body_for_humans=$(jq -M . <<< "$body" 2> /dev/null)
+            then
+                printf '%s\n' "$body_for_humans" >&2
+            else
+                printf '%s\n' "$body" >&2
+            fi
+        fi
+        return 22
+    else
+        # Normal execution, output to stdout.
+        printf '%s\n' "$body"
+        return 0
+    fi
+}
+----
 
 .Typical usage
 ====
