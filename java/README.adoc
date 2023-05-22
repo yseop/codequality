@@ -129,7 +129,7 @@ To match Eclipse code formatter configuration, we will use the IntelliJ plugin l
 .Notes
 . The standard IntelliJ code formatter has options that won't be available with this plugin, but the aim (see link:#_introduction[Introduction]) is to keep a common configuration between diffrent IDEs.
 
-. Tries to configure the IntelliJ standard code formatter to match the Eclipse code formatter settings weren't successfull: there were always differences between both formatters (especially in Javadoc, empty blocks and white lines).
+. Tries to configure the IntelliJ standard code formatter to match the Eclipse code formatter settings weren't successful: there were always differences between both formatters (especially in Javadoc, empty blocks and white lines).
 
 
 ==== Installation
