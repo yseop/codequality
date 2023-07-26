@@ -184,21 +184,41 @@ You can also format a folder with a right click on this folder and btn:[Reformat
 
 To be sure not to forget to format your code, you can set “save actions”, a set of actions that will be triggered each time you save a modification in your code.
 
-* Install the `Save Actions` plugin.
+See if your IDE is recent enough to have menu:File[Settings > Tools > Actions on Save].
+If not, install the `Save Actions` plugin.
+Note that this plugin is not compatible with recent (about 2023) IntelliJ versions and may throw errors when saving.
 
-* Go to menu:File[Settings > Other settings > Save Actions].
+Proceed to <<save_actions_native>> or <<save_actions_plugin>> according to the case you are in.
 
-* Tick the 3 options in the “General” panel:
+
+[[save_actions_native]]
+==== With the IDE’s native save actions
+
+. Go to menu:File[Settings > Tools > Actions on Save].
+
+. Tick:
+** [x] btn:[Reformat code],
+** [x] btn:[Optimize imports].
+
+. Click btn:[OK].
+
+
+[[save_actions_plugin]]
+==== With the old third-party plugin
+
+. Go to menu:File[Settings > Other settings > Save Actions].
+
+. Tick the 3 options in the “General” panel:
 ** [x] btn:[Activate save actions on save],
 ** [x] btn:[Activite save actions on shortcut],
 ** [x] btn:[No action if compile errors].
 
-* Then tick the btn:[Optimize imports] box, and the btn:[Reformat file] box.
+. Then tick the btn:[Optimize imports] box, and the btn:[Reformat file] box.
 
-* Then tick the boxes:
+. Then tick the boxes:
 ** [x] btn:[Add missing @Override annotations],
 ** [x] btn:[Add blocks to if/while/for statements],
 ** [x] btn:[Remove explicit generic type for diamond]
 ** [x] and btn:[Remove unnecessary semicolon] boxes.
 
-* Click btn:[OK].
+. Click btn:[OK].
