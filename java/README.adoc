@@ -1,12 +1,6 @@
 = Yseop code style documentation
-
 :experimental:
-:toc2:
-:sectnums:
-:revnumber: 1.0
-:icons: font
-:source-highlighter: coderay
-:sectanchors:
+:toc:
 :imagesdir: readme-img
 
 This document's goal is to show how to enforce the Yseop code Style (based on http://google.github.io/styleguide/javaguide.html[Google's guidelines]).
@@ -14,10 +8,10 @@ This document's goal is to show how to enforce the Yseop code Style (based on ht
 
 == Introduction
 
-Developers at Yseop can choose their preferred IDE among: 
+Developers at Yseop can choose their preferred IDE among:
 
-* Eclipse (most common use), 
-* IntelliJ (most recently used), 
+* Eclipse (most common use),
+* IntelliJ (most recently used),
 * and maybe others.
 
 In order to avoid code changes (and merge conflicts or whatever) when developers work with different IDEs on the same project, we have to find a common code Formatter configuration.
