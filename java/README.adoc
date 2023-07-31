@@ -189,6 +189,12 @@ Proceed to <<save_actions_native>> or <<save_actions_plugin>> according to the c
 ==== With the IDE’s native save actions
 
 . Go to menu:File[Settings > Tools > Actions on Save].
++
+[CAUTION]
+====
+This is project-specific.
+To change the default values, go through menu:File[New Projects Setup > Settings for new projects…] instead.
+====
 
 . Tick:
 ** [x] btn:[Reformat code],
