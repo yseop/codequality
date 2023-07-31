@@ -181,6 +181,7 @@ To be sure not to forget to format your code, you can set “save actions”, a 
 See if your IDE is recent enough to have menu:File[Settings > Tools > Actions on Save].
 If not, install the `Save Actions` plugin.
 Note that this plugin is not compatible with recent (about 2023) IntelliJ versions and may throw errors when saving.
+If you feel confident enough, you can try using a fork that better supports recent versions, like https://github.com/fishermans/intellij-plugin-save-actions[this one].
 
 Proceed to <<save_actions_native>> or <<save_actions_plugin>> according to the case you are in.
 
