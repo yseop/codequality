@@ -762,6 +762,40 @@ sed '
 ----
 
 
+=== `-n` in `[` and `[[`
+
+Another generally useless option.
+
+`[ -n "$foo" ]` +
+⇔ +
+`[ "$foo" ]` +
+⇔ +
+`[[ -n $foo ]]` +
+⇔ +
+`[[ $foo ]]`
+
+[NOTE]
+====
+There’s an exception:
+`[[` allows line breaks (which is awesome for readability) but may, then, get confused:
+
+> unexpected token “newline”, conditional binary operator expected
+
+In such cases, so you may need that overkill option:
+
+[source, bash]
+----
+if [[
+    -n $1
+    &&
+    -n $2
+]]
+----
+====
+
+See `help test` for `[` and `help [[` for `[[` when in doubt.
+
+
 == Readability
 
 Make your code easier to understand for others.
