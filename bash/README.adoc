@@ -673,7 +673,6 @@ Things that can be done in more concise or clear ways.
 === Quotes in assignments
 
 Quotes are not needed on the right-hand side of assignments, unless you have hardcoded spaces or Bash metacharacters (`| & ;`, etc.) there.
-In some editors, syntax highlighting may even be better without those quotes.
 
 [source, bash]
 ----
@@ -699,7 +698,7 @@ This yields (as expected):
 mix = [$'fooa \t b \n cbarabc\n\nd e fplop']
 ----
 
-The legit uses for quotes in assignments are things like:
+The mandatory uses for quotes in assignments are things like:
 
 [source, bash]
 ----
@@ -716,11 +715,7 @@ foo='bar&plop'
 foo="bar;${yo}"
 ----
 
-Of course, when in doubt, it’s better to quote, but:
-
-* `foo='bar/plop'` is definitely overkill;
-
-* keep in mind that in the context of assignments, it is _not_ the presence of variable or command expansions you should be worried about, but the *hardcoded characters* (basically the opposite of what people tend to think).
+Of course, when in doubt, it’s better to quote, especially if it leads to a better syntax highlighting, but try to avoid overkill things: `foo=$1` or `n=12` are perfectly readable without quotes.
 
 
 === Reading input
