@@ -1628,6 +1628,38 @@ Solutions include:
 ** Relying on a program like `bc` or even `python` for arithmetics.
 
 
+=== Traps and cleanup
+
+If you need temporary files during your script’s execution, set up an automatic cleanup for when the script exits:
+
+[source, bash]
+----
+trap_exit() { <1>
+    if [[ $TMP_DIR ]] <2>
+    then
+        rm -fr -- "$TMP_DIR" <3>
+    fi
+}
+
+unset -v TMP_DIR <4>
+trap trap_exit EXIT <5>
+
+TMP_DIR=$(mktemp -d […]) <6>
+----
+<1> Cleanup function.
+
+<2> Don’t attempt anything funny if the temporary-directory-related global variable is not set or if it is empty.
+
+<3> Deletion.
+
+<4> Make sure we don’t delete random stuff if there was an exported value and if we fail prematurely, before having created the “real” temporary directory.
+
+<5> Set up the “trap” for cleanup on exit.
+See `help trap` for more.
+
+<6> Create the temporary directory however you like, and initialize the global variable.
+
+
 == Unit tests
 
 It is fairly easy to test functions without resorting to overkill third-party frameworks, and this can make development a lot easier.
