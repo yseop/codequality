@@ -424,7 +424,7 @@ Putting `set -e` at the beginning of a script is often used to prevent “snowba
 
 This is not _always_ relevant, though:
 
-* It is not as easy to master as it seems.
+* https://stackoverflow.com/questions/71619652/difference-of-behavior-between-set-e-source-and-bash-ec-source[It is not as easy to master as it seems.]
 There are many contexts in which commands are legitimately allowed by `set -e` to fail (typically in conditionals, or on the left side of a pipe), and not knowing them could lead to more trouble than a fully manual error handling strategy would.
 
 * In a script meant for internal use on non-sensitive data, it may not be worth the shift of mindset it requires.
