@@ -343,6 +343,22 @@ mkdir "${opts[@]}" path/to/plop.log
 |===
 
 
+[[wd]]
+=== Working directory
+
+Avoid using `cd` (or changing the working directory in any other way) if possible.
+Relative paths that may have been provided as arguments would become invalid, for example.
+
+It follows that you should use absolute paths internally whenever you can.
+See <<basedir>>, as this can help greatly in that regard.
+
+[TIP]
+====
+You can use `cd` in a subshell (`$(…)` or `(…)`) so that effects will be reverted.
+Also see `pushd` and `popd`.
+====
+
+
 === `eval`
 
 `eval` has several major issues:
@@ -993,6 +1009,38 @@ When _executing commands_, however, you _can_ add a slash to show that an argume
 
 
 == Tips
+
+[[basedir]]
+=== Script location and project root
+
+A very common need in scripts is to know where the script stands – and by extension, getting the path to the root of the project.
+(Also see <<wd>>.)
+
+.Getting a clean absolute path to the directory holding the script
+====
+[source, bash]
+----
+BASEDIR=$(cd "$(dirname "$0")" && pwd -P)
+readonly BASEDIR
+----
+
+A version relying on `readlink` is also popular, but it is less portable.
+====
+
+In order to get the project’s root, if the script is in a subdirectory (typically `scripts/`), use the same approach but append one `/..` *for each subdirectory level*:
+
+.Getting a clean absolute path to the project’s root when the script is one level below
+====
+[source, bash]
+----
+ROOTDIR=$(cd "$(dirname "$0")"/.. && pwd -P)
+readonly ROOTDIR
+----
+
+You may be tempted to use `ROOTDIR=${BASEDIR}/..` but it would be less readable in debug logs, and harder to manipulate later.
+The `pwd`-based approach gets rid of `..`-s.
+====
+
 
 === Boolean impersonations
 
