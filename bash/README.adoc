@@ -796,7 +796,7 @@ if [[
 See `help test` for `[` and `help [[` for `[[` when in doubt.
 
 
-== Readability
+== Maintainability
 
 Make your code easier to understand for others.
 
@@ -925,14 +925,9 @@ Well… escaping _more_ things than double quotes do.
 ====
 
 
-== Debuggability
-
-Fail fast, or make sure trouble-causing cases are caught.
-
-
 === Check mandatory parameters
 
-Both in functions or for the script itself, make sure you check early that parameters that ought to be set (and, if relevant, non-empty) are indeed set.
+In functions or for the script itself, make sure you check early that parameters that ought to be set (and, if relevant, non-empty) are indeed set.
 
 [source, bash]
 ----
@@ -960,6 +955,41 @@ my_function "$@"
 ----
 
 Just like `set -e`, this can avoid “snowballing” effects and catch issues early.
+
+
+=== Storing paths
+
+Do _not_ include trailing slashes when storing directory paths in variables.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+p=foo/bar/
+p+=plop/
+
+readonly MY_CONST=/home/jenkins/
+----
+|
+[source, bash]
+----
+p=foo/bar
+p+=/plop
+
+readonly MY_CONST=/home/jenkins
+----
+|===
+
+This will cause fewer surprises, especially considering that most native tools (`find`, `pwd`, `dirname`, `basename`, etc.) output paths like this.
+
+When _executing commands_, however, you _can_ add a slash to show that an argument is a directory path:
+
+`mkdir -p foo/bar/plop/` +
+`+rm -vfr -- "${my_temp_dir:?}"/+`
 
 
 == Tips
