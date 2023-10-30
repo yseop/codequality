@@ -189,6 +189,7 @@ esac
 ----
 
 
+[[heredoc]]
 ==== Here documents
 
 (The `<<` technique used to feed multiple lines into a command, typically for help blurbs; see `man bash`.)
@@ -249,6 +250,51 @@ _TEXT_
 
 * [x] Avoid the `+<<-+` syntax (used to remove leading hard tabs) unless you really need it.
 Keep in mind that it does not remove leading spaces, only hard tabs (which we do not use anyway).
+
+
+==== Redirections
+
+Use one space on each side of the redirection operator:
+
+* [x] Between the command and the operator.
+* [x] Between the operator and the file path or here string or <<heredoc, here document>>.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+f>log.txt
+f>>log.txt
+f 2>log.txt
+f&>/dev/null
+f 2>&1
+
+f<input.txt
+f<<<here_string
+----
+|
+[source, bash]
+----
+f > log.txt
+f >> log.txt
+f 2> log.txt
+f &> /dev/null
+f 2>&1
+
+f < input.txt
+f <<< here_string
+----
+|===
+
+[CAUTION]
+====
+Things like `2>&1` are actually one big operator.
+They’ll break if you split them.
+====
 
 
 == Pitfalls
