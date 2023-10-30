@@ -2262,5 +2262,7 @@ curl_fail_with_body "${args[@]}"
 * https://drive.google.com/file/d/1oSxE6qZXBAzRKEaVJnXdufy7jYvGaYf4/view?usp=sharing[Internal technical presentation (French).]
 
 * `man bash` (`/` to search, `n` and `N` for next and previous occurrences).
+You will be surprised by how much useful information is in there.
+You can even run something like `man bash | grep -iC 5 'substring'` to quickly find stuff.
 
 * https://google.github.io/styleguide/shellguide.html[The Google guide]. Their conventions are not 100% aligned with ours of course, but this contains useful tips, like the need to split `local foo=$(bar)` into two statements, etc.
