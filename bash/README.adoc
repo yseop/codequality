@@ -189,6 +189,86 @@ esac
 ----
 
 
+==== Strings
+
+===== Quote types
+
+In shell scripts, nearly everything is a string.
+Quotes are not really there to _define_ strings: they are a tool to _escape characters_ – especially whitespace.
+Kinda like a massive backslash targeting multiple characters at once.
+
+Both single (`'`) and double quotes (`"`) have their use in scripts.
+You can find https://stackoverflow.com/questions/6697753/difference-between-single-and-double-quotes-in-bash[lots of details about that] on the web, but, _very_ basically:
+
+* In `"foo $(bar) ${plop} $((yo + 1)) yeah"`, the `$`-based things are interpreted: command executions, variable substitution, arithmetics…
+
+* In `'foo $(bar) ${plop} $((yo + 1)) yeah'`, nothing happens: you get this string, verbatim.
+
+Double quotes can roughly be seen like https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals[backticks in JavaScript, where they are used for template strings].
+*Don’t use double quotes when you don’t need any `$`-based construct in your string!*
+Stick to single quotes if you are just giving a *hardcoded, fixed string*.
+Depending on the context, you may even be better off with *no quotes at all*: single quotes are often more a visual hint than an obligation.
+
+What matters is that you don’t send readers on the wrong tracks regarding *your intent* and the *potential content, meaning, and role* of the string.
+
+[cols = "2*a", options = header]
+|===
+^.^| {do_not}
+^.^| {instead}
+
+|
+[source, bash]
+----
+foo=$("grep" "plop" "path/to/file.txt")
+if [ "$foo" = "yo-plop" ]
+then
+    "printf" "Result: %s\n" "Success"
+fi
+----
+|
+[source, bash]
+----
+foo=$(grep 'plop' path/to/file.txt)
+if [ "$foo" = 'yo-plop' ]
+then
+    printf 'Result: %s\n' 'Success'
+fi
+----
+|===
+
+[TIP]
+====
+The special syntax `$'…'` allows the interpretation of “ANSI{nbsp}C” backslash-escaped characters – most famously `\n` for newlines and `\t` for tabulations, but also Unicode-related sequences:
+
+[source, bash]
+----
+$ nl <<< $'foo\tbar\nplop \u2665'
+     1	foo<TAB>bar
+     2	plop ♥
+----
+====
+
+See also <<unprotected_expansions>> and <<quotes_in_assignments>>.
+
+
+===== Concatenation
+
+Just put strings side by side, and they’ll be merged, since quotes are removed once they have fulfilled their purpose of escaping what’s within.
+
+For more complex or programmatic concatenations, use `+=`.
+
+====
+[source, bash]
+----
+foo=bar$(echo yo)'s p a c e s'$((1 + 2))$'tab\ttab'
+bar=123
+foo+="s p a c e s${bar} again"
+----
+
+⇒ `foo` will contain `baryos p a c e s3tab<TAB>tabs p a c e s123 again`.
+====
+
+
 [[heredoc]]
 ==== Here documents
 
@@ -302,6 +382,7 @@ They’ll break if you split them.
 Things that may cause issues in the long run or that may hamper initial development.
 
 
+[[unprotected_expansions]]
 === Unprotected expansions
 
 When writing `$foo` on its own instead of `"$foo"`, you’re asking the Bash interpreter to split the contents of the `foo` variable into multiple words in every place where a character of the `IFS` variable (“Internal Field Separator” – by default this includes spaces, tabs and newlines) is found:
@@ -777,7 +858,10 @@ foo='bar&plop'
 foo="bar;${yo}"
 ----
 
-Of course, when in doubt, it’s better to quote, especially if it leads to a better syntax highlighting, but try to avoid overkill things: `foo=$1` or `n=12` are perfectly readable without quotes.
+Of course, when in doubt, it’s better to quote, especially if it leads to a better syntax highlighting, but try to *avoid overkill things*:
+
+* `foo=$1` or `n=12` are perfectly readable without quotes.
+* `foo=$(…)` looks less cluttered than `foo="$(…)"` while being just as robust.
 
 
 === Reading input
