@@ -2325,12 +2325,13 @@ curl_fail_with_body() {
     local -i HTTP_CODE
     HTTP_CODE=$(curl --output "$OUTPUT_FILE" --write-out "%{http_code}" "$@")
 
-    local body=$(
+    local body
+    body=$(
         cat "$OUTPUT_FILE"
     )
     rm "$OUTPUT_FILE"
 
-    if (($HTTP_CODE < 200 || $HTTP_CODE > 299))
+    if ((HTTP_CODE < 200 || HTTP_CODE > 299))
     then
         # Printing to stderr dodges the $( … )-s, thus allowing
         # the user to actually see what went wrong.
