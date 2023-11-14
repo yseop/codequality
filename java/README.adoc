@@ -165,7 +165,7 @@ image::type-exclusions.png[Filetype exclusions]
 
 - Click btn:[OK].
 
-- Also make sure the btn:[Class count to use import with '+++*+++'] and btn:[Names count to use static import with '+++*+++'] are set to{nbsp}99:
+- In menu:File[Settings > Editor > Code Style > Java > Imports], make sure the btn:[Class count to use import with '+++*+++'] and btn:[Names count to use static import with '+++*+++'] are set to{nbsp}99:
 +
 image::imports-intellij.png[Settings window screenshot for imports]
 
