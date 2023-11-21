@@ -332,6 +332,36 @@ _TEXT_
 Keep in mind that it does not remove leading spaces, only hard tabs (which we do not use anyway).
 
 
+==== Arrays
+
+Keep your array declarations (or item additions) readable with linebreaks and indentation, unless they are really trivial.
+This will also make Git conflicts less likely.
+
+[source, bash]
+----
+t1=(
+    foo
+    bar
+    'an item with whitespace'
+    "$(some_command 'arg')"
+)
+
+t2+=(
+    yo
+    yeah
+)
+
+declare -A associative_t=(
+    [key1]='value 1'
+    [key2]='value 2'
+)
+
+----
+
+// ↑ ↑ ↑ Oddly enough, Visual Studio Code’s syntax highlighting goes haywire
+// if I remove the blank line between the “)” and the end of the snippet.
+
+
 ==== Redirections
 
 Use one space on each side of the redirection operator:
