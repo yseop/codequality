@@ -84,6 +84,58 @@ foo
 
 Also note that `+#Bar+` is generally used for commented-out code (typically during a debugging session), while explanatory comments should use a leading space: `+# Bar+`.
 
+See also <<documentation>>.
+
+
+[[documentation]]
+==== Documentation
+
+There is no set Javadoc-like convention in shell scripts, but this does not mean that we should not add documentation.
+Try to add something that looks like the example below…
+
+* at the top of each script (keep it short if there is a `--help` feature in it, to avoid duplication);
+* above each non-trivial function.
+
+====
+[source, bash]
+----
+# Print a list of fruits available on the server.
+#
+# The “SERVER_USR” and “SERVER_PSW” environment variables must be set. <1>
+#
+# The global associative array “censored_fruits” must be initialized. <2>
+# The fruits contained in it will be removed from the printed list.
+#
+# $1    Base API URL of the server. <3>
+# $2    (Optional) If set and not empty, use HTTPS instead of HTTP. <4>
+#       Note that a valid certificate is needed.
+#
+# stdout →  JSON array, each item being an object having the following string <5>
+#           fields: “name”, “id” <6>
+#           If there are no fruits, an empty array (“[]”) is printed.
+#
+# Returns with a 0 status if and only if the query was sent successfully. <7>
+----
+====
+<1> Oftentimes, shell scripts need things that are not passed very explicitly, so listing them could make people’s life easier.
+
+<2> For global variables (which are sometimes hard to avoid, even if it’s indeed better to avoid them), it can be useful to state whether they are strings (the most common ones), integers (rare, declared with `declare -i` or `local -i`), indexed arrays or associative arrays (the hashmap-like ones).
+At least you then know what you’re dealing with when performing maintenance on the function’s content.
+
+<3> Use the Tabulation key to neatly align (with spaces, as usual) parameter descriptions.
+
+<4> Argument number and usage is often far from evident in shell scripts and functions, so make sure you list them all and mark optional arguments as such.
+
+<5> Results are generally printed out.
+Do not mix that up with the return status provided via `return` in functions and `exit` in scripts, which is merely used to indicate… well… a status.
+Therefore, never say that a function or script “returns” text.
+It can put text in a global variable, print it to stdout or stderr, or even write it into a file, but it never “returns” it.
+
+<6> Wrap when lines get arguably long.
+
+<7> Do not use “returns” and “exits” interchangeably: a function may use `exit` to completely abort the script that called it – it is very different from using `return`.
+It follows that any given function may have, simultaneously, explanatory “Returns with…” and “Exits with…” sentences in its documentation.
+
 
 ==== Shebang
 
