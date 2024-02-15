@@ -1944,10 +1944,34 @@ BASEDIR=$(cd "$(dirname "$0")" && pwd -P)
 readonly BASEDIR
 export BASEDIR
 
+# Adapt if some tests files have overly long paths,
+# but don’t increase that too much either.
+declare -ri TEST_LOG_WIDTH=70
+
+if [[ $1 = '-h' || $1 = '--help' ]]
+then
+    echo 'Usage: No arg to run all; give test paths (files or directories) to run just them.'
+    exit 0
+fi
+
 # If needed, create a sandbox for tests that fiddle with files.
+# Unset the global variable to avoid deleting unrelated stuff
+# if the script somehow crashes between the trap setup
+# and the temporary directory creation.
+#clean_up() {
+#    set +x
+#
+#    if [[ $TEST_TMP && -d $TEST_TMP ]]
+#    then
+#        rm -r -- "$TEST_TMP"
+#    fi
+#}
+#unset -v TEST_TMP
+#trap clean_up EXIT
 #TEST_TMP=$(mktemp -d "${TMPDIR:-/tmp}"/bash-tests-XXXXXXXX)
 #readonly TEST_TMP
 #export TEST_TMP
+# [End of sandbox-related code to uncomment]
 
 # Keep track of which files caused issues.
 unset -v failure_paths
@@ -1958,7 +1982,7 @@ declare -i nb=0
 while read -rd '' path
 do
     # Padded relative path to test file.
-    printf '%-65s' "$(printf '%q... ' "${path#${BASEDIR}/test/}")"
+    printf "%-${TEST_LOG_WIDTH}s" "$(printf '%q ' "${path#"$(pwd)/"}")"
     # Only activate “-x” at the last moment,
     # and keep the output in your pocket for now.
     if output=$(
@@ -1989,12 +2013,7 @@ do
 done < <(
     # If specific test files were given as arguments,
     # run only those instead of fetching all test files.
-    if [[ $# -gt 0 ]]
-    then
-        printf '%s\0' "$@"
-    else
-        find "$BASEDIR"/test/ -type f -print0
-    fi
+    find "${@:-${BASEDIR}/test/}" -type f -print0
 )
 
 # Display a summary.
@@ -2006,7 +2025,7 @@ else
     echo
     echo 'Failures:'
     echo
-    printf '  - %q\n' "${failure_paths[@]}"
+    printf '  - %q\n' "${failure_paths[@]#"$(pwd)/"}"
     echo
     exit 1
 fi
@@ -2379,6 +2398,272 @@ Make sure `run-tests.sh` is executable (`chmod u+x`).
 
 == Useful functions and snippets
 
+=== Checking for the presence of some executables
+
+[source, bash]
+----
+# $@  Name of executables that must be found.
+#
+# Exit brutally with ≠0 status if at least one is missing.
+check_progs() {
+    local error
+    local p
+
+    for p
+    do
+        if ! type "$p" &> /dev/null
+        then
+            printf 'The command or program “%s” does not seem to be available.\n' "$p" >&2
+            error=1
+        fi
+    done
+
+    if [[ $error ]]
+    then
+        exit 1
+    else
+        return 0
+    fi
+}
+----
+
+.Usage
+====
+[source, bash]
+----
+check_progs curl jq unzip yq column
+----
+====
+
+
+=== JSON and jq
+
+==== Array length
+
+[source, bash]
+----
+# Wrapper around jq’s “length”, geared towards arrays.
+#
+# <Empty input>   ⇒ 0
+# null            ⇒ 0
+# []              ⇒ 0
+# ["foo", "bar"]  ⇒ 2
+# Non-array input such as “{"foo":12}” or “"string"”
+#                 ⇒ 0
+#
+# Works either with $1 or with stdin.
+# $1 takes precedence, even if empty, as long as explicitly defined.
+#
+# Note that:
+# * “safe” is relative: we assume the JSON is correct
+#   (just perhaps empty or non-array).
+# * jq will run its script for each input, so “[][]” ⇒ 0<NEWLINE>0.
+safe_jq_length() {
+    local data
+    data=${1-$(cat /dev/stdin)}
+    jq '(arrays | length) // 0' <<< "${data:-[]}"
+}
+----
+
+.Usage
+====
+.With argument
+[source, bash]
+----
+if (($(safe_jq_length "$json") > 10))
+then
+    echo 'Big array'
+fi
+----
+
+.With stdin
+[source, bash]
+----
+length=$(command-producing-json | safe_jq_length)
+----
+====
+
+
+==== Array non-emptiness
+
+(Requires the previous snippet.)
+
+[source, bash]
+----
+# Wrapper around “safe_jq_length” to see if that length is at least one.
+# $1 or stdin supported.
+# While “safe_jq_length” accepts multiple inputs due to how jq works,
+# this test function only considers the first one.
+# Note that negating the result of this function does not result
+# in a “is empty JSON array” test, but rather in a “is either an
+# empty JSON array or something that is not an array” test.
+is_nonempty_json_array() {
+    local data
+    data=${1-$(cat /dev/stdin)}
+    (($(safe_jq_length "$data" | head -1) > 0))
+}
+----
+
+.Usage
+====
+.With argument
+[source, bash]
+----
+if is_nonempty_json_array "$projects_json"
+then
+    display_projects "$projects_json"
+fi
+----
+
+.With stdin
+[source, bash]
+----
+if command-producing-json | is_nonempty_json_array
+then
+    echo 'It works'
+fi
+----
+====
+
+
+=== UUIDs
+
+[source, bash]
+----
+# Rough check to see if a string looks like a UUID.
+# Perhaps a bit too loose in some regards, but it makes sure
+# we’ve got only hex digits and hyphens, with the correct amounts and order.
+#
+# Works either with $1 or with stdin.
+# $1 takes precedence, even if empty, as long as explicitly defined.
+#
+# Returns with 0 status only if the input is UUID-like.
+is_uuid() {
+    local data
+    data=${1-$(cat /dev/stdin)}
+    grep -xEq '[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}' <<< "$data"
+}
+----
+
+.Usage
+====
+.With argument
+[source, bash]
+----
+if is_uuid "$data"
+then
+    do_stuff "$data"
+fi
+----
+
+[source, bash]
+.With stdin
+----
+if ! command | is_uuid
+then
+    echo 'Something went wrong.' >&2
+    exit 1
+fi
+----
+====
+
+
+=== Version number comparisons
+
+While basic cases can be handled with `sort -V` alone, sometimes we need to make sure that our own product’s versions are sorted in such a way that versions with suffixes (snapshots, alpha releases, milestones…) are treated as being lower than suffix-less versions.
+The following functions help in that regard.
+
+[source, bash]
+----
+# Filter (reads data on stdin) to sort version numbers.
+# Basically uses “sort -V” but also considers suffix-less versions
+# to be “better” (higher) than versions with suffixes.
+# (By “suffix”, we mean “hyphen and then more text”.)
+# No difference is made between the different kinds of suffixes, though,
+# so the algorithm falls back to lexicographical order then.
+#
+# 3.2.1 > 3.2.0 > 3.2.0-SNAPSHOT / …-M01 / …-alpha-foo
+# 3.2.0-SNAPSHOT > 3.1.9
+#
+# If you’re getting your version numbers from jq, make sure you
+# avoid nulls by using something like “.version // empty”.
+#
+# All versions from the input are printed back to stdout, with the highest
+# version coming first (so a “head -1” can get the max and kill the processes
+# to save time and resources).
+sort_versions() {
+    # Use a dummy suffix that is lexicographically very high, so that “sort -V”
+    # considers “real”, suffix-less versions as “better” than snapshots and the like.
+    # Remove the dummy suffix at the end, of course.
+    # We ignore case to avoid getting alpha releases in weird places (may get
+    # considered higher than no-suffix otherwise due to “a” coming before “Z”,
+    # and this may even be locale-dependent).
+    sed 's/^[^-]*$/&-ZZZZZ/' |
+            sort --ignore-case -rV |
+            sed 's/-ZZZZZ$//'
+}
+
+# Wrapper around “sort_versions” to get only the max.
+get_highest_version() {
+    sort_versions | head -1
+}
+----
+
+.Usage
+====
+.Comparing the versions found in v1 v2 and v3 variables
+[source, bash]
+----
+if [[ $(printf '%s\n' "$v1" "$v2" "$v3" | get_highest_version) = "$v1" ]]
+then
+    echo 'The first is the highest.'
+fi
+----
+====
+
+
+=== Regular readable file test
+
+Nothing extremely complicated here but it’s annoying to type so we often end up with just one of the tests instead of three, and with a vague error message.
+
+[source, bash]
+----
+# Utility to log stuff if a file does not exist
+# or is not a regular file, etc.
+#
+# $1  Path to file (Mandatory, not empty)
+#
+# Returns with 0 status iff the path leads to
+# a regular file readable by the user.
+is_regular_readable_file() {
+    local f=${1:?No path given.}
+    if [[ ! -e $f ]]
+    then
+        printf 'File not found: %q\n' "$f" >&2
+        return 1
+    elif [[ ! -f $f ]]
+    then
+        printf 'Not a regular file: %q\n' "$f" >&2
+        return 2
+    elif [[ ! -r $f ]]
+    then
+        printf 'File not readable: %q\n' "$f" >&2
+        return 3
+    else
+        return 0
+    fi
+}
+----
+
+.Usage
+====
+[source, bash]
+----
+is_regular_readable_file "$file" || exit
+----
+====
+
+
 === Curl with status, AKA “fail with body”
 
 While using `curl` might seem simple, it’s often hard to get the correct behavior when juggling with options like `--fail`, `--silent` and `--show-error`: you can end up with…
@@ -2415,9 +2700,13 @@ curl_fail_with_body() {
 
     if ((HTTP_CODE < 200 || HTTP_CODE > 299))
     then
-        # Printing to stderr dodges the $( … )-s, thus allowing
-        # the user to actually see what went wrong.
-        printf 'HTTP CODE = %s\n' "$HTTP_CODE" >&2
+        # If, e.g., “Could not resolve host”, we get 0 instead of a real HTTP status.
+        if ((HTTP_CODE != 0))
+        then
+            # Printing to stderr dodges the $( … )-s, thus allowing
+            # the user to actually see what went wrong.
+            printf 'HTTP CODE = %s\n' "$HTTP_CODE" >&2
+        fi
         if [[ $body ]]
         then
             # Print as human-friendly JSON if possible, otherwise raw.
@@ -2438,7 +2727,9 @@ curl_fail_with_body() {
 }
 ----
 
-.Typical usage
+Depending on the context, you may want to add options directly in the `curl` call within that function, such as `--no-progress-meter` (for recent versions of `curl`) or `--location`.
+
+.Usage
 ====
 [source, bash]
 ----
@@ -2454,6 +2745,75 @@ args=(
 curl_fail_with_body "${args[@]}"
 ----
 ====
+
+
+=== Git Askpass
+
+One way to provide credentials to Git, especially in CI/CD tools, is to set the `GIT_ASKPASS` environment variable to refer to a script providing a username and a password (generally a token) as requested.
+
+Typically, in Jenkins:
+
+[source, groovy]
+----
+environment {
+    GIT_USER = 'jenkins-yseop'
+    GIT_API_TOKEN = credentials('github')
+    GIT_ASKPASS = "${env.WORKSPACE}/_git-askpass.sh"
+}
+----
+
+Then make sure the mentioned file exists and is executable:
+
+.`_git-askpass.sh`
+[source, bash]
+----
+#! /usr/bin/env bash
+
+# Meant to be used via the GIT_ASKPASS environment variable
+# to provide Git credentials through environment variables.
+
+case ${1,,} in
+    username*)
+        printf '%s\n' "$GIT_USER"
+        ;;
+
+    password*)
+        printf '%s\n' "$GIT_API_TOKEN"
+        ;;
+
+    *)
+        # Nothing to do.
+        :
+        ;;
+esac
+----
+
+Subsequent Git commands should then “just work”.
+Note, however, that cloning operations will have to be done through HTTPS, not via SSH, as this is not SSH authentication.
+If you need your script to be both Jenkins-friendly and dev-friendly, you can add a layer of abstraction such as:
+
+[source, bash]
+----
+# Get address for “git clone”.
+# If GIT_ASKPASS is set, use HTTP. Otherwise use SSH.
+#
+# $1  Repository name. Example: “aa_afa-domains”
+#
+# stdout →
+#     https://github.com/yseop/XXX.git
+#     or
+#     git@github.com:yseop/XXX.git
+repository_name_to_cloning_address() {
+    if [[ $GIT_ASKPASS ]]
+    then
+        # HTTP:
+        printf 'https://github.com/yseop/%s.git\n' "${1:?Repository name}"
+    else
+        # SSH:
+        printf 'git@github.com:yseop/%s.git\n' "${1:?Repository name}"
+    fi
+}
+----
 
 
 == Further reading and watching
