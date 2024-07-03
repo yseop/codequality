@@ -189,17 +189,23 @@ Proceed to <<save_actions_native>> or <<save_actions_plugin>> according to the c
 [[save_actions_native]]
 ==== With the IDE’s native save actions
 
-. Go to menu:File[Settings > Tools > Actions on Save].
-+
 [CAUTION]
 ====
 This is project-specific.
-To change the default values, go through menu:File[New Projects Setup > Settings for new projects…] instead.
+To change the *default values*, go through menu:File[New Projects Setup > Settings for new projects…] instead of menu:File[Settings].
 ====
+
+. Go to menu:File[Settings > Tools > Actions on Save].
 
 . Tick:
 ** [x] btn:[Reformat code],
 ** [x] btn:[Optimize imports].
+
+. Still in settings, go to menu:Editor[Inspections], and focus on the Java ones (beware of similarly named inspections that exist for other supported languages):
+
+** [x] “Statement with empty body” Java inspection: tick btn:[Comments count as content].
+
+** [x] “Control flow statement without braces” Java inspection: increase the severity to “Error”.
 
 . Click btn:[OK].
 
