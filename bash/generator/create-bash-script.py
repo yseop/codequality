@@ -15,19 +15,19 @@ def unindent():
 def add_line(new_line: str):
     output_lines.append(current_indent_steps * "\t" + new_line)
 
+def print_output_lines():
+    # Merge lines.
+    result = "\n".join(output_lines)
+    # Use the right indentation kind of width.
+    result = result.replace("\t", " " * indent_size)
+    print(result)
+
 use_env = False
 
 if use_env:
     add_line("#! /usr/bin/env bash")
 else:
     add_line("#! /bin/bash")
-
-indent()
-indent()
-add_line("# test comment")
-
-# NB: Replace not working?
-print("\n".join(output_lines).replace("\t", " " * indent_size))
 
 print("""
 if type greadlink &> /dev/null
