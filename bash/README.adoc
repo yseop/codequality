@@ -2739,7 +2739,7 @@ args=(
     --header 'Accept: application/json'
     --basic
     --user "${ACP_USR:?}:${ACP_PSW:?}"
-    -sS # = “--silent” + “--show-error”
+    --no-progress-meter
 )
 
 curl_fail_with_body "${args[@]}"
