@@ -56,7 +56,7 @@ if __name__ == "__main__":
     _f_log() {
       local prog
       prog=$(basename "$0"):
-      printf "%s %s${2}\n" "$prog" "$1" "${@:3}"
+      printf "%s %s${2}\\n" "$prog" "$1" "${@:3}"
     }
 
     # $1    Printf-style format string.
