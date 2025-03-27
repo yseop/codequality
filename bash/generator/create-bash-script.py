@@ -97,6 +97,8 @@ def part_basedir():
         else
             BASEDIR=$(dirname "$(readlink -f -- "$0")")
         fi""")
+    else:
+        add_line('BASEDIR=$(dirname "$(readlink -f -- "$0")")')
     add_line("readonly BASEDIR")
 
 def part_logging_utils():
