@@ -638,6 +638,7 @@ This is also covered in https://stackoverflow.com/a/71600549/9089759[that same S
 See also <<pass_by_name, this section>> regarding `declare -n` and `local -n`.
 
 
+[[set_e_etc]]
 === `set -e` and others
 
 (See `help set` for details.)
