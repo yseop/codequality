@@ -47,5 +47,5 @@ Now you will have to update your `User Settings`:
         "token": "xxx"
     }
 ]
----
+----
 <1> The location of your Java home
