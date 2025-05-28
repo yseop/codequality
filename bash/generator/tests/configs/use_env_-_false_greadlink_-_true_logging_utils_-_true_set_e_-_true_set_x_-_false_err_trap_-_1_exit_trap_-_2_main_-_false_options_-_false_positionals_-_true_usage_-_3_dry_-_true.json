@@ -1,0 +1,14 @@
+{
+    "use_env": false,
+    "greadlink": true,
+    "logging_utils": true,
+    "set_e": true,
+    "set_x": false,
+    "err_trap": 1,
+    "exit_trap": 2,
+    "main": false,
+    "options": false,
+    "positionals": true,
+    "usage": 3,
+    "dry": true
+}
