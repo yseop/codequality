@@ -20,6 +20,7 @@ import logging
 import enum
 import dataclasses
 import json
+import functools
 
 # ================================================================
 
@@ -421,17 +422,28 @@ def ask_yes_or_no(question: str, default: bool = None) -> bool:
                     logging.error("Invalid input. Please specify either “y” or “n”.")
 
 
+def use_main_writer_by_default(func):
+    """
+    Decorator setting the `writer` argument to `main_writer`
+    if missing or None, prior to running the decorated function.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if kwargs.get("writer") is None:
+            kwargs["writer"] = main_writer
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@use_main_writer_by_default
 def indent(levels: int = 1, writer: Writer = None):
     """Increase the current indent level of the global `writer`."""
-    if writer is None:
-        writer = main_writer
     writer.current_indent_steps += levels
 
 
+@use_main_writer_by_default
 def unindent(levels: int = 1, writer: Writer = None):
     """Decrease the current indent level of the global `writer`."""
-    if writer is None:
-        writer = main_writer
     writer.current_indent_steps -= levels
 
 
@@ -439,6 +451,7 @@ def is_blank(s: str):
     return s is None or not s.strip()
 
 
+@use_main_writer_by_default
 def add_line(new_line: str = None, writer: Writer = None):
     """
     Register an automatically indented line.
@@ -455,9 +468,6 @@ def add_line(new_line: str = None, writer: Writer = None):
                             Generally only specified when registering lines
                             for a separate utility functions library file.
     """
-    if writer is None:
-        writer = main_writer
-
     if is_blank(new_line):
         # Avoid getting just a bunch of indentation spaces or whatever on the line.
         new_line = ""
@@ -469,6 +479,7 @@ def add_line(new_line: str = None, writer: Writer = None):
     writer.output_lines.append(new_line)
 
 
+@use_main_writer_by_default
 def add_lines(text: str, keep_indentation: bool = False, writer: Writer = None):
     """
     Register multiple lines at once.
@@ -488,8 +499,6 @@ def add_lines(text: str, keep_indentation: bool = False, writer: Writer = None):
                                     Generally only specified when registering lines
                                     for a separate utility functions library file.
     """
-    if writer is None:
-        writer = main_writer
     if not keep_indentation:
         text = dedent(text)
     one_indentation_step = " " * writer.indent_size
