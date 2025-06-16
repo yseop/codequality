@@ -2402,7 +2402,7 @@ Make sure `run-tests.sh` is executable (`chmod u+x`).
 === Template generator
 
 Use link:generator/create-bash-script.py[] to get a nice template as a starting point for your scripts, with or without certain specific features.
-Use `-h` / `--help` for details.
+Use `-h` / `--help` for details, and see link:generator/README.adoc[the dedicated ReadMe file].
 
 
 === Checking for the presence of some executables
