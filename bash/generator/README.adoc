@@ -1,0 +1,101 @@
+= Bash script template generator
+
+link:create-bash-script.py[] is a Python{nbsp}3 script making it easier to bootstrap a Bash script.
+
+
+== Getting help
+
+Beside this ReadMe file, you can get information by using the `--help` (also `-h`) option of the script.
+
+
+== Basics
+
+The generator has multiple configuration parameters.
+The values of those parameters are set by asking questions to the user, interactively.
+The user can ask for different “levels of details” when running the generator: this is done via the `--level` (also `-l`) option, which takes a level name (or its short alias) as argument:
+
+.Levels of details
+[cols = "3m, m, 8d", options = "header"]
+|===
+| Level
+| Alias
+| Description
+
+| batch
+| b
+| Ask no questions.
+Use the default value for everything.
+
+| default
+| d
+| Ask standard questions.
+
+| advanced
+| a
+| Ask standard questions, plus some questions related to features that are more complex, hard to master, or rarely used.
+
+| full
+| f
+| Ask every possible question.
+|===
+
+.Generate a script in batch mode
+====
+[source, bash]
+----
+./create-bash-script.py -lb
+# or
+./create-bash-script.py --level batch
+----
+====
+
+
+== Reusing configurations
+
+=== Obtaining a configuration
+
+You can output the list of generation parameters resulting from your answers, as JSON data, by using the `--dump-config` (also `-d`) option.
+Give it a filename as parameter to save the configuration to that file.
+Give it `-` to print the configuration to the standard output.
+
+.Printing the configuration as JSON
+====
+[source, bash]
+----
+./create-bash-script.py -d-
+----
+
+[source, json]
+----
+// […]
+==== [ ↓ CONFIG START ↓ ] ====
+{
+    "use_env": true,
+    "greadlink": false,
+    "logging_utils": true,
+    "set_e": false,
+    "set_x": false,
+    "err_trap": 0,
+    "exit_trap": 0,
+    "main": false,
+    "options": true,
+    "positionals": true,
+    "usage": 1,
+    "dry": false,
+    "utils": 0
+}
+==== [ ↑  CONFIG END  ↑ ] ====
+----
+====
+
+
+=== Loading a configuration
+
+A JSON configuration can be loaded in two ways:
+
+Using the `--load-config` (also `-c`) option::
+This generates the Bash code exactly as instructed by the JSON configuration.
+No question is asked.
+
+Using the `--base-config` (also `-b`) option::
+This uses the JSON configuration to alter the default values of the generation parameters, but the script will still ask questions as usual (depending on the selected level of details) so that the user can fine-tune the configuration.
