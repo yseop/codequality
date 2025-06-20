@@ -1,0 +1,61 @@
+= Yseop Kustomize guidelines and tips
+:toc:
+:toclevels: 3
+
+:do_not:  &#x1F44E; Do not write this
+
+== Context
+
+This document was initiated during the kustomize migration from `3.8.0` to `5.4.3` as a guideline for the transition.
+
+Once the migration is complete the content of this document should be updated to reflect `5.4.3` guidelines instead.
+
+
+== Patches
+
+[cols = "2*a", options = "header"]
+|===
+| Code
+| Comment
+
+|
+[source, yaml]
+----
+patchesJson6902:
+    - path: mypath
+----
+| Syntax 1: This is acceptable.
+
+|
+[source,yaml]
+----
+patchesStrategicMerge:
+    - myfile.yml
+----
+| *Transition syntax:* This is preferred until fully migrated to `kustomize` `5.4.3`.
+
+|
+[source, yaml]
+----
+patches:
+    - path: mypath
+----
+| This is the target for `5.4.3` but fails for multi-documents in `3.8.0`.
+In case of an error, fallback to the `transition syntax`.
+
+|
+[source, yaml]
+----
+patches:
+    - mypath
+----
+| {do_not}
+
+|
+[source, yaml]
+----
+patchesStrategicMerge:
+    - path: myfile.yml
+----
+| {do_not}
+|===
