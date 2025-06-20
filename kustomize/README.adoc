@@ -10,6 +10,7 @@ This document was initiated during the kustomize migration from `3.8.0` to `5.4.
 
 Once the migration is complete the content of this document should be updated to reflect `5.4.3` guidelines instead.
 
+
 == Patches
 
 [cols = "2*a", options = "header"]
