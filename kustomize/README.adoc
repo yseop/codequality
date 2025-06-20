@@ -18,7 +18,7 @@ Once the migration is complete the content of this document should be updated to
 | Comment
 
 |
-[source,yaml]
+[source, yaml]
 ----
 patchesJson6902:
     - path: mypath
@@ -34,7 +34,7 @@ patchesStrategicMerge:
 | *Transition syntax:* This is preferred until fully migrated to `kustomize` `5.4.3`.
 
 |
-[source,yaml]
+[source, yaml]
 ----
 patches:
     - path: mypath
@@ -57,5 +57,4 @@ patchesStrategicMerge:
     - path: myfile.yml
 ----
 | {do_not}
-
 |===
