@@ -51,7 +51,7 @@ patches:
 | {do_not}
 
 |
-[source,yaml]
+[source, yaml]
 ----
 patchesStrategicMerge:
     - path: myfile.yml
