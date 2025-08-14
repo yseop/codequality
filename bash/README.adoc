@@ -1411,7 +1411,12 @@ Generally speaking, if you’re considering to type “find item in array in bas
 ====
 
 
-=== Passing arrays to functions
+[[arrays_and_functions]]
+=== Creating or editing arrays from within functions, or passing arrays as arguments
+
+Detailed, standardized examples can be found in: +
+link:examples/arrays_and_functions.sh[]
+
 
 ==== Break it down into pieces
 
