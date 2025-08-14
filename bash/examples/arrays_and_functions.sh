@@ -18,6 +18,7 @@
 #   }
 # ================================================================
 
+# For the sake of the example:
 # Put “EDITED” in index 2 of an array.
 #
 # $1  Name of externally declared indexed array.
@@ -38,6 +39,7 @@ edit_external_indexed_array() {
   __ref[2]='EDITED'
 }
 
+# For the sake of the example:
 # Add or set an “EDITED” value for a “KEY” key in an associative array.
 #
 # $1  Name of externally declared associative array.
@@ -58,6 +60,7 @@ edit_external_associative_array() {
   __ref[KEY]='EDITED'
 }
 
+# For the sake of the example:
 # Declare a global indexed array containing a given number of random numbers.
 # Overwrite it if it already exists.
 #
@@ -89,6 +92,7 @@ declare_global_indexed_array() {
   done
 }
 
+# For the sake of the example:
 # Declare a global associative array containing:
 #   • The date in a “date” entry.
 #   • The kernel release (output of “uname -r”) in a “kernel” entry.
