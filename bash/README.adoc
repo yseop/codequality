@@ -2538,6 +2538,63 @@ fi
 ====
 
 
+=== Tabular data printing
+
+Use `column` (and optionally `sort`) to print data in a table-like format:
+
+.Printing the date for a list of timestamps
+====
+[source, bash]
+----
+{
+    echo $'Timestamp\tYear\tMonth\tDay'
+    echo $'¯¯¯¯¯¯¯¯¯\t¯¯¯¯\t¯¯¯¯¯\t¯¯¯'
+
+    for t in 1755685000 1799999999 1750000000
+    do
+        printf '%d\t%s\t%s\t%s\n' \
+                "$t" \
+                "$(date -d "@${t}" '+%Y')" \
+                "$(date -d "@${t}" '+%B')" \
+                "$(date -d "@${t}" '+%-d')"
+    done | sort -V
+} | column -ts $'\t'
+----
+
+(A single `date` call with tabulations (`%t`) in its format could be used, but the example would be harder to understand.)
+
+.Output
+[source, console]
+----
+Timestamp   Year  Month    Day
+¯¯¯¯¯¯¯¯¯   ¯¯¯¯  ¯¯¯¯¯    ¯¯¯
+1750000000  2025  June     15
+1755685000  2025  August   20
+1799999999  2027  January  15
+----
+====
+
+[TIP]
+====
+* An indexed array can be used to build the row.
+It can then be printed out with tabs https://en.wikipedia.org/wiki/Input_Field_Separators[as a temporary custom `IFS`]:
++
+[source, bash]
+----
+row=()
+row+=(foo)
+row+=("$(cmd bar)")
+
+(
+    IFS=$'\t'
+    printf '%s\n' "${row[*]}"
+)
+----
+
+* `column` can also be used to make CSVs more human-friendly, by specifying `,` as the separator instead of tabulations.
+====
+
+
 === UUIDs
 
 [source, bash]
