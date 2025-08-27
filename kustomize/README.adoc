@@ -1,17 +1,20 @@
 = Yseop Kustomize guidelines and tips
-:toc:
+:toc: preamble
 :toclevels: 3
-
 :do_not:  &#x1F44E; Do not write this
 
-== Context
 
-This document was initiated during the kustomize migration from `3.8.0` to `5.4.3` as a guideline for the transition.
+This document was initiated during the Kustomize migration from{nbsp}``3.8.0`` to{nbsp}``5.4.3`` as a guideline for the transition, and now provides general guidelines to keep our codebase modern and free from warnings.
 
-Once the migration is complete the content of this document should be updated to reflect `5.4.3` guidelines instead.
+The migration to{nbsp}``5.4.3`` is now complete, and the guidelines were updated accordingly; see the file’s history for the old migration-oriented guidelines.
 
 
 == Patches
+
+[TIP]
+====
+https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/patches/
+====
 
 [cols = "2*a", options = "header"]
 |===
@@ -21,28 +24,30 @@ Once the migration is complete the content of this document should be updated to
 |
 [source, yaml]
 ----
-patchesJson6902:
+patches:
     - path: mypath
 ----
-| Syntax 1: This is acceptable.
+| This is the standard syntax for `5.4.3`.
+
+|
+[source, yaml]
+----
+patchesJson6902:
+    […]
+----
+| {do_not}
+
+This is now deprecated, and this feature is supported through `patches:`.
 
 |
 [source,yaml]
 ----
 patchesStrategicMerge:
-    - myfile.yml
+    […]
 ----
-| *Transition syntax:* This is preferred until fully migrated to `kustomize` `5.4.3`.
+| {do_not}
 
-|
-[source, yaml]
-----
-patches:
-    - path: mypath
-----
-| This is the target for `5.4.3` but fails for multi-documents in `3.8.0`.
-In case of an error, fallback to the `transition syntax`.
-
+This is now deprecated, and this feature is supported through `patches:`.
 |
 [source, yaml]
 ----
@@ -51,11 +56,66 @@ patches:
 ----
 | {do_not}
 
+Invalid syntax in `5.4.3`.
+|===
+
+
+== Bases
+
+[cols = "2*a", options = "header"]
+|===
+| {do_not}
+| `5.4.3` syntax
+
 |
 [source, yaml]
 ----
-patchesStrategicMerge:
-    - path: myfile.yml
+bases:
+  - ../4.2
 ----
-| {do_not}
+
+|
+[source, yaml]
+----
+resources:
+  - ../4.2
+----
 |===
+
+[WARNING]
+====
+If there is already a `resources:` list in the file, merge the lists.
+Do not keep duplicated YAML keys within a single YAML object.
+====
+
+
+== Common labels
+
+[cols = "2*a", options = "header"]
+|===
+| {do_not}
+| `5.4.3` syntax
+
+|
+[source, yaml]
+----
+commonLabels:
+  environment: prod
+  environment-profile: high-volume
+----
+
+|
+[source, yaml]
+----
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: prod
+      environment-profile: high-volume
+----
+|===
+
+[TIP]
+====
+You can use `kustomize edit fix` while being in the kustomization’s directory to get an idea of what to change, but beware of diff noise (the result’s style and ordering rules generally differs greatly from ours).
+====
