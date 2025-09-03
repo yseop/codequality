@@ -6,8 +6,6 @@
 
 This document was initiated during the Kustomize migration from{nbsp}``3.8.0`` to{nbsp}``5.4.3`` as a guideline for the transition, and now provides general guidelines to keep our codebase modern and free from warnings.
 
-The migration to{nbsp}``5.4.3`` is now complete, and the guidelines were updated accordingly; see the file’s history for the old migration-oriented guidelines.
-
 
 == Patches
 
